@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VocabMaster AI - 智慧單字學習與間隔重複測驗</title>
+  <title>VocabMaster AI - 智慧單字學習與複習測驗</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -39,7 +39,7 @@
         </div>
         <div>
           <h1 class="font-bold text-lg tracking-tight text-slate-900 leading-tight">VocabMaster <span class="text-brand-600">AI</span></h1>
-          <p class="text-xs text-slate-500 hidden sm:block">間隔重複 SRS・擬真干擾・無障礙縮放</p>
+          <p class="text-xs text-slate-500 hidden sm:block">智慧複習排程・擬真干擾・無障礙縮放</p>
         </div>
       </div>
 
@@ -160,7 +160,7 @@
             <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
               <i class="fa-solid fa-wand-magic-sparkles text-brand-600" aria-hidden="true"></i> 建立隨堂測驗
             </h2>
-            <p class="text-xs text-slate-500 mt-0.5">內建差異化 SRS 記憶排程、每日新字節流閥與同詞性／字首擬真干擾。</p>
+            <p class="text-xs text-slate-500 mt-0.5">內建智慧複習排程、每日新字節流閥與同詞性／字首擬真干擾。</p>
           </div>
 
           <div class="space-y-2.5">
@@ -186,10 +186,10 @@
 
           <div class="space-y-2.5">
             <div class="flex flex-wrap items-center justify-between gap-2">
-              <label class="text-sm font-bold text-slate-700">2. 選擇出題策略（SRS 記憶排程）</label>
+              <label class="text-sm font-bold text-slate-700">2. 選擇出題策略</label>
               <div class="flex items-center gap-1.5 text-xs bg-sky-50 border border-sky-200/80 px-2.5 py-1 rounded-lg text-sky-900">
                 <span class="font-semibold">每日新字上限：</span>
-                <input type="number" id="quiz-daily-new-limit" min="0" max="500" value="20" oninput="onQuizFilterOptionChange()" aria-label="每日加入新字上限" class="w-14 px-1.5 py-0.5 text-center font-bold bg-white border border-sky-300 rounded text-xs focus:outline-none">
+                <input type="number" id="quiz-daily-new-limit" min="0" max="500" value="20" oninput="onQuizFilterOptionChange()" onblur="this.value = quizConfig.dailyNewLimit" aria-label="每日加入新字上限" class="w-14 px-1.5 py-0.5 text-center font-bold bg-white border border-sky-300 rounded text-xs focus:outline-none">
                 <span>字</span>
                 <span id="daily-new-used-badge" class="text-sky-700 font-medium">（今日已學 0 字）</span>
               </div>
@@ -199,7 +199,7 @@
               <label class="cursor-pointer flex items-start gap-2.5 p-3 rounded-xl border-2 transition-all border-brand-600 bg-brand-50/40" id="priority-card-srs">
                 <input type="radio" name="quizPriority" value="srs" checked onchange="updateQuizPriorityUI()" class="mt-1 accent-brand-600">
                 <div>
-                  <div class="font-bold text-xs text-slate-900 flex items-center gap-1"><i class="fa-solid fa-brain text-brand-600" aria-hidden="true"></i> 智慧間隔重複（推薦）</div>
+                  <div class="font-bold text-xs text-slate-900 flex items-center gap-1"><i class="fa-solid fa-brain text-brand-600" aria-hidden="true"></i> 智慧複習排程（推薦）</div>
                   <p class="text-xs text-slate-500 mt-1 leading-relaxed">優先「不熟錯題」➜「到期複習」➜「限量新字」，其餘依間隔補足。</p>
                 </div>
               </label>
@@ -257,7 +257,7 @@
                     <span>看中填英（拼字測驗）</span>
                     <span class="text-xs bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-semibold">高記憶權重</span>
                   </div>
-                  <p class="text-xs text-slate-500 mt-1 leading-relaxed">無猜題紅利，答對可獲得完整 SRS 長間隔推進（1→3→8→22天）。</p>
+                  <p class="text-xs text-slate-500 mt-1 leading-relaxed">無猜題紅利，答對可獲得更長複習間隔推進（1→3→8→22天）。</p>
                 </div>
               </label>
               <label class="cursor-pointer relative flex items-start gap-3 p-3.5 rounded-xl border-2 transition-all border-slate-200 hover:border-slate-300" id="mode-card-cloze">
@@ -265,9 +265,9 @@
                 <div>
                   <div class="font-bold text-sm text-slate-900 flex items-center gap-1.5 flex-wrap">
                     <span>AI 語境填空選擇題</span>
-                    <span class="text-xs bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded font-semibold">背景預取・零等待</span>
+                    <span class="text-xs bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded font-semibold">背景預取・附詳解</span>
                   </div>
-                  <p class="text-xs text-slate-500 mt-1 leading-relaxed">即時造出全新例句挖空單字，並自動在背景預取下一題。</p>
+                  <p class="text-xs text-slate-500 mt-1 leading-relaxed">即時造出全新例句挖空單字，並附上語境與用法詳解。</p>
                 </div>
               </label>
             </div>
@@ -355,7 +355,7 @@
           </div>
           <div>
             <h3 class="text-xl font-bold text-slate-900">測驗完成！</h3>
-            <p class="text-xs text-slate-500 mt-1">已依題型權重與間隔重複（SRS）演算法更新下次複習排程</p>
+            <p class="text-xs text-slate-500 mt-1">已依答題表現自動更新下次複習排程</p>
           </div>
 
           <div class="grid grid-cols-3 gap-3 max-w-md mx-auto pt-2">
@@ -385,7 +385,7 @@
 
         <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 space-y-3">
           <h4 class="font-bold text-sm text-slate-800 flex items-center gap-2">
-            <i class="fa-solid fa-clipboard-check text-brand-600" aria-hidden="true"></i> 作答詳解與間隔排程回顧
+            <i class="fa-solid fa-clipboard-check text-brand-600" aria-hidden="true"></i> 作答詳解與複習排程回顧
           </h4>
           <div id="result-review-list" class="space-y-3"></div>
         </div>
@@ -482,7 +482,7 @@
                 <i class="fa-solid fa-share-nodes" aria-hidden="true"></i> 匯出乾淨分享版（不含個人進度）
               </button>
               <button onclick="exportDataToJson(true)" class="w-full py-2 bg-white hover:bg-indigo-50 text-indigo-600 border border-indigo-200 font-semibold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5">
-                <i class="fa-solid fa-download" aria-hidden="true"></i> 匯出個人完整備份（含 SRS 進度）
+                <i class="fa-solid fa-download" aria-hidden="true"></i> 匯出個人完整備份（含學習進度）
               </button>
             </div>
           </div>
@@ -501,7 +501,7 @@
 
         <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
           <button onclick="approveAllAiWords()" class="text-xs font-semibold text-amber-700 hover:underline">將全部「AI 待審核」標記為已審核</button>
-          <button onclick="resetAllUnfamiliarStats()" class="text-xs font-semibold text-rose-600 hover:underline">重置所有 SRS 記憶與不熟紀錄</button>
+          <button onclick="resetAllUnfamiliarStats()" class="text-xs font-semibold text-rose-600 hover:underline">重置所有學習與不熟紀錄</button>
           <button onclick="restoreDefaultSampleData()" class="text-xs font-semibold text-slate-600 hover:text-brand-600 underline">還原預設範例清單</button>
           <div id="corrupted-backup-actions" class="hidden flex items-center gap-2">
             <button onclick="restoreLatestCorruptedBackup()" class="text-xs font-semibold text-purple-700 hover:underline">還原損毀備份 (<span id="corrupted-backup-count">0</span> 份)</button>
@@ -1497,14 +1497,14 @@
 
       const famBar = document.getElementById('detail-familiarity-bar');
       const toggleBtn = document.getElementById('btn-toggle-word-unfamiliar');
-      const srsInfo = `<span class="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 font-semibold"><i class="fa-regular fa-clock" aria-hidden="true"></i> SRS 間隔 ${w.interval || 0} 天（${formatNextReviewLabel(w)}）</span>`;
+      const reviewInfo = `<span class="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 font-semibold"><i class="fa-regular fa-clock" aria-hidden="true"></i> 複習間隔 ${w.interval || 0} 天（${formatNextReviewLabel(w)}）</span>`;
 
       if ((w.wrongCount || 0) > 0) {
-        famBar.innerHTML = `<span class="px-2 py-0.5 rounded-md bg-rose-100 text-rose-700 font-bold"><i class="fa-solid fa-fire" aria-hidden="true"></i> 不熟單（錯 ${w.wrongCount} / 對 ${w.correctCount || 0}）</span>${srsInfo}`;
+        famBar.innerHTML = `<span class="px-2 py-0.5 rounded-md bg-rose-100 text-rose-700 font-bold"><i class="fa-solid fa-fire" aria-hidden="true"></i> 不熟單（錯 ${w.wrongCount} / 對 ${w.correctCount || 0}）</span>${reviewInfo}`;
         toggleBtn.textContent = '標記為已熟練';
         toggleBtn.className = 'px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-semibold transition-colors';
       } else {
-        famBar.innerHTML = `<span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-semibold"><i class="fa-solid fa-check" aria-hidden="true"></i> 熟練度正常（對 ${w.correctCount || 0} 次）</span>${srsInfo}`;
+        famBar.innerHTML = `<span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-semibold"><i class="fa-solid fa-check" aria-hidden="true"></i> 熟練度正常（對 ${w.correctCount || 0} 次）</span>${reviewInfo}`;
         toggleBtn.textContent = '標記為不熟';
         toggleBtn.className = 'px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-xl text-xs font-semibold transition-colors';
       }
@@ -1961,8 +1961,8 @@
 
     function selectWordsByPriority(pool, count) {
       if (quizConfig.priority === 'random') return { words: shuffleArray(pool).slice(0, count), cappedByNewLimit: false };
-      if (quizConfig.priority === 'unfamiliar_only') return { words: shuffleArray(shuffleArray(pool.filter(isWordUnfamiliar)).sort((a, b) => b.wrongCount - a.wrongCount).slice(0, count)), cappedByNewLimit: false };
-      if (quizConfig.priority === 'due_only') return { words: shuffleArray(shuffleArray(pool.filter(isWordDueReview)).sort((a, b) => (b.wrongCount - a.wrongCount) || ((a.nextReviewAt || 0) - (b.nextReviewAt || 0))).slice(0, count)), cappedByNewLimit: false };
+      if (quizConfig.priority === 'unfamiliar_only') return { words: shuffleArray(pool.filter(isWordUnfamiliar).sort((a, b) => b.wrongCount - a.wrongCount).slice(0, count)), cappedByNewLimit: false };
+      if (quizConfig.priority === 'due_only') return { words: shuffleArray(pool.filter(isWordDueReview).sort((a, b) => (b.wrongCount - a.wrongCount) || ((a.nextReviewAt || 0) - (b.nextReviewAt || 0))).slice(0, count)), cappedByNewLimit: false };
 
       const groupWrong = shuffleArray(pool.filter(isWordUnfamiliar)).sort((a, b) => b.wrongCount - a.wrongCount);
       const groupDueReview = shuffleArray(pool.filter(w => !isWordUnfamiliar(w) && isWordDueReview(w))).sort((a, b) => (a.nextReviewAt || 0) - (b.nextReviewAt || 0));
@@ -2002,7 +2002,7 @@
       recordTodayLearnedNewWordIds(selectedQuestions.filter(isWordNew).map(w => w.id));
 
       activeQuiz = {
-        questions: selectedQuestions.map(w => ({ wordObj: w, generatedSentence: null, sentenceZh: null, isAiSentence: false, prefetchPromise: null, options: [] })),
+        questions: selectedQuestions.map(w => ({ wordObj: w, generatedSentence: null, sentenceZh: null, explanation: null, isAiSentence: false, prefetchPromise: null, options: [] })),
         currentIndex: 0, score: 0, results: [], isAnswered: false
       };
 
@@ -2101,20 +2101,28 @@
     }
 
     function fetchOrReuseClozeSentence(qItem) {
-      if (qItem.generatedSentence) return Promise.resolve({ sentenceEn: qItem.generatedSentence, sentenceZh: qItem.sentenceZh, isAiGenerated: qItem.isAiSentence });
+      if (qItem.generatedSentence) {
+        return Promise.resolve({
+          sentenceEn: qItem.generatedSentence,
+          sentenceZh: qItem.sentenceZh,
+          explanation: qItem.explanation,
+          isAiGenerated: qItem.isAiSentence
+        });
+      }
       if (qItem.prefetchPromise) return qItem.prefetchPromise;
 
       const targetWord = qItem.wordObj;
       const promise = (async () => {
         if (getApiKey() && navigator.onLine) {
           try {
-            const prompt = `針對英文單字 "${targetWord.word}"（詞性：${targetWord.pos}，中文意思：${targetWord.meaning}），造一個自然的英文例句，必須直接包含原形拼字 "${targetWord.word}"，並回傳 JSON：{"sentenceEn":"包含該單字原形的英文句子","sentenceZh":"句子的繁體中文翻譯"}`;
-            const aiRes = await callGeminiJSON(prompt, 10000);
+            const prompt = `針對英文單字 "${targetWord.word}"（詞性：${targetWord.pos}，中文意思：${targetWord.meaning}），造一個自然的英文例句（必須直接包含原形拼字 "${targetWord.word}"），並附上繁體中文詳解（說明為何此單字符合句意、前後搭配詞線索與用法重點），回傳 JSON：{"sentenceEn":"包含該單字原形的英文句子","sentenceZh":"句子的繁體中文翻譯","explanation":"繁體中文語境與用法詳解（約40-80字）"}`;
+            const aiRes = await callGeminiJSON(prompt, 11000);
             if (aiRes.sentenceEn && buildClozeMaskedSentence(aiRes.sentenceEn, targetWord.word).matched) {
               qItem.generatedSentence = aiRes.sentenceEn;
               qItem.sentenceZh = aiRes.sentenceZh || '';
+              qItem.explanation = aiRes.explanation || '';
               qItem.isAiSentence = true;
-              return { sentenceEn: qItem.generatedSentence, sentenceZh: qItem.sentenceZh, isAiGenerated: true };
+              return { sentenceEn: qItem.generatedSentence, sentenceZh: qItem.sentenceZh, explanation: qItem.explanation, isAiGenerated: true };
             }
           } catch (_) {}
         }
@@ -2126,8 +2134,11 @@
           qItem.generatedSentence = `Choose the English word that means "${targetWord.meaning}" (${targetWord.pos || 'word'}): ${targetWord.word}.`;
           qItem.sentenceZh = `請選出符合中文意思「${targetWord.meaning}」的英文單字。`;
         }
+        qItem.explanation = targetWord.collocations?.length
+          ? `常見搭配用法：${targetWord.collocations.join('、')}`
+          : '';
         qItem.isAiSentence = false;
-        return { sentenceEn: qItem.generatedSentence, sentenceZh: qItem.sentenceZh, isAiGenerated: false };
+        return { sentenceEn: qItem.generatedSentence, sentenceZh: qItem.sentenceZh, explanation: qItem.explanation, isAiGenerated: false };
       })();
 
       qItem.prefetchPromise = promise;
@@ -2256,18 +2267,43 @@
       if (storedWord) { updateWordSrsProgress(storedWord, isCorrect, quizConfig.mode); saveAppData(); }
 
       const updatedWord = storedWord || w;
-      activeQuiz.results.push({ wordObj: updatedWord, isCorrect, userAnswer, sentenceEn: qItem.generatedSentence || w.exampleEn });
+      const explanationText = qItem.explanation || '';
+      activeQuiz.results.push({
+        wordObj: updatedWord,
+        isCorrect,
+        userAnswer,
+        sentenceEn: qItem.generatedSentence || w.exampleEn,
+        explanation: explanationText
+      });
+
       document.getElementById('quiz-score-live').textContent = `得分：${activeQuiz.score}`;
       document.getElementById('quiz-tts-btn').classList.remove('hidden');
 
-      const modeHint = quizConfig.mode === 'spelling' ? '（拼字完整加成）' : '（選擇題標準增量）';
+      const modeHint = quizConfig.mode === 'spelling' ? '（拼字長間隔）' : '';
+      const exampleHtml = (qItem.generatedSentence || w.exampleEn)
+        ? `<div class="mt-2 pt-2 border-t border-black/10 text-xs space-y-0.5">
+             <div class="font-medium">${escapeHtml(qItem.generatedSentence || w.exampleEn)}</div>
+             ${(qItem.sentenceZh || w.exampleZh) ? `<div class="opacity-80">${escapeHtml(qItem.sentenceZh || w.exampleZh)}</div>` : ''}
+           </div>`
+        : '';
+
+      const aiDetailHtml = explanationText
+        ? `<div id="quiz-ai-explanation-box" class="mt-2 p-2.5 rounded-lg bg-white/80 border border-black/10 text-xs leading-relaxed">
+             <span class="font-bold text-indigo-700"><i class="fa-solid fa-lightbulb" aria-hidden="true"></i> 題目詳解：</span>${escapeHtml(explanationText)}
+           </div>`
+        : `<div id="quiz-ai-explanation-box" class="mt-2">
+            <button type="button" data-answer="${escapeHtml(userAnswer)}" data-correct="${isCorrect}" onclick="fetchOnDemandQuizExplanation(this.dataset.answer, this.dataset.correct === 'true')" id="btn-fetch-ai-explain" class="text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-white/90 hover:bg-white text-indigo-700 border border-indigo-200 shadow-sm transition-colors inline-flex items-center gap-1.5">
+              <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> AI 詳解（解析選項差異與記憶技巧）
+            </button>
+           </div>`;
+
       const banner = document.getElementById('quiz-feedback-banner');
       if (isCorrect) {
         banner.className = 'p-3.5 rounded-xl text-sm flex items-start gap-3 bg-emerald-50 border border-emerald-200 text-emerald-900';
-        banner.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 text-lg mt-0.5" aria-hidden="true"></i><div class="space-y-1"><div class="font-bold">答對了！ ${escapeHtml(w.word)} (${escapeHtml(w.pos || '')})</div><div class="text-xs text-emerald-800">${escapeHtml(w.meaning)}</div><div class="text-xs text-emerald-700 font-semibold"><i class="fa-regular fa-clock" aria-hidden="true"></i> SRS 下次複習間隔已更新為 ${updatedWord.interval} 天 ${modeHint}</div></div>`;
+        banner.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 text-lg mt-0.5 shrink-0" aria-hidden="true"></i><div class="space-y-1 flex-1"><div class="font-bold">答對了！ ${escapeHtml(w.word)} (${escapeHtml(w.pos || '')})</div><div class="text-xs text-emerald-800">${escapeHtml(w.meaning)}</div><div class="text-xs text-emerald-700 font-semibold"><i class="fa-regular fa-clock" aria-hidden="true"></i> 下次複習已排定為 ${updatedWord.interval} 天後 ${modeHint}</div>${exampleHtml}${aiDetailHtml}</div>`;
       } else {
         banner.className = 'p-3.5 rounded-xl text-sm flex items-start gap-3 bg-rose-50 border border-rose-200 text-rose-900';
-        banner.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-600 text-lg mt-0.5" aria-hidden="true"></i><div class="space-y-1"><div class="font-bold">答錯了！已重置 SRS 間隔並提高不熟單優先度</div><div class="text-xs text-rose-900">正確解答：<strong class="underline">${escapeHtml(w.word)}</strong> (${escapeHtml(w.pos || '')}) — ${escapeHtml(w.meaning)}</div><div class="text-xs text-rose-700">您的作答：${escapeHtml(userAnswer)}</div></div>`;
+        banner.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-600 text-lg mt-0.5 shrink-0" aria-hidden="true"></i><div class="space-y-1 flex-1"><div class="font-bold">答錯了！已重新排入複習清單</div><div class="text-xs text-rose-900">正確解答：<strong class="underline">${escapeHtml(w.word)}</strong> (${escapeHtml(w.pos || '')}) — ${escapeHtml(w.meaning)}</div><div class="text-xs text-rose-700">您的作答：${escapeHtml(userAnswer)}</div>${exampleHtml}${aiDetailHtml}</div>`;
       }
 
       const nextBtn = document.getElementById('btn-next-question');
@@ -2277,6 +2313,32 @@
 
       document.getElementById('quiz-feedback-area').classList.remove('hidden');
       if (isAutoSpeakEnabled()) speakText(w.word);
+    }
+
+    async function fetchOnDemandQuizExplanation(userAnswer, isCorrect) {
+      if (!getApiKey()) return showToast('請先至「設定與匯入」填入 Gemini API Key', 'warning');
+      const box = document.getElementById('quiz-ai-explanation-box');
+      const qItem = activeQuiz.questions[activeQuiz.currentIndex];
+      const lastResult = activeQuiz.results[activeQuiz.results.length - 1];
+      if (!box || !qItem) return;
+
+      const w = qItem.wordObj;
+      box.innerHTML = `<div class="p-2.5 rounded-lg bg-white/80 border border-indigo-100 text-xs text-indigo-700 flex items-center gap-2"><i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> AI 正在撰寫詳解...</div>`;
+
+      try {
+        const wrongContext = !isCorrect ? `學生誤答為「${userAnswer}」，請順便點出它與正確答案的差異或容易混淆的原因。` : '';
+        const optionsContext = qItem.options?.length ? `本題選項有：${qItem.options.join('、')}。` : '';
+        const prompt = `針對英文單字測驗題（目標單字：${w.word}，詞性：${w.pos}，中文：${w.meaning}），${optionsContext}${wrongContext}請用繁體中文提供精簡扼要的學習詳解（包含詞根/記憶技巧、核心用法與選項辨析，約 50～90 字），回傳 JSON：{"explanation":"繁體中文詳解"}`;
+        const res = await callGeminiJSON(prompt, 12000);
+        const text = (res.explanation || '').trim();
+        if (!text) throw new Error('未取得有效詳解');
+
+        qItem.explanation = text;
+        if (lastResult) lastResult.explanation = text;
+        box.innerHTML = `<div class="p-2.5 rounded-lg bg-white/90 border border-black/10 text-xs leading-relaxed text-slate-800"><span class="font-bold text-indigo-700"><i class="fa-solid fa-lightbulb" aria-hidden="true"></i> AI 詳解：</span>${escapeHtml(text)}</div>`;
+      } catch (err) {
+        box.innerHTML = `<div class="text-xs text-rose-700">詳解生成失敗：${escapeHtml(err.message)}</div>`;
+      }
     }
 
     function speakCurrentQuizWord() {
@@ -2290,7 +2352,7 @@
     }
 
     function abortQuiz() {
-      showCustomConfirm('結束測驗', '確定要提前結束目前的測驗嗎？已作答題目的 SRS 間隔紀錄會保留。', resetQuizToSetup);
+      showCustomConfirm('結束測驗', '確定要提前結束目前的測驗嗎？已作答題目的學習紀錄會保留。', resetQuizToSetup);
     }
 
     function resetQuizToSetup() {
@@ -2314,7 +2376,7 @@
 
       document.getElementById('result-review-list').innerHTML = activeQuiz.results.map(res => {
         const w = res.wordObj;
-        return `<div class="p-3.5 rounded-xl border ${res.isCorrect ? 'border-slate-200 bg-slate-50/50' : 'border-rose-200 bg-rose-50/40'} flex items-start justify-between gap-3"><div class="space-y-1"><div class="flex items-center gap-2 flex-wrap"><i class="fa-solid ${res.isCorrect ? 'fa-circle-check text-emerald-500' : 'fa-circle-xmark text-rose-500'}" aria-hidden="true"></i><span class="font-bold text-slate-900">${escapeHtml(w.word)}</span><span class="text-xs text-slate-500">${escapeHtml(w.pos || '')}</span><span class="text-xs font-semibold bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded">下次複習：${formatNextReviewLabel(w)}</span>${(w.wrongCount || 0) > 0 ? `<span class="text-xs font-bold bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded">累計錯 ${w.wrongCount} 次</span>` : ''}<button type="button" data-speak="${escapeHtml(w.word)}" onclick="speakText(this.dataset.speak)" aria-label="朗讀 ${escapeHtml(w.word)}" class="text-slate-400 hover:text-brand-600 text-xs"><i class="fa-solid fa-volume-high" aria-hidden="true"></i></button></div><p class="text-xs text-slate-700">${escapeHtml(w.meaning)}</p>${!res.isCorrect ? `<p class="text-xs text-rose-600">您的作答：${escapeHtml(res.userAnswer)}</p>` : ''}</div><button type="button" data-word-id="${escapeHtml(w.id)}" onclick="openWordDetail(this.dataset.wordId)" class="text-xs font-semibold text-brand-600 hover:underline shrink-0">查看詳情</button></div>`;
+        return `<div class="p-3.5 rounded-xl border ${res.isCorrect ? 'border-slate-200 bg-slate-50/50' : 'border-rose-200 bg-rose-50/40'} flex items-start justify-between gap-3"><div class="space-y-1"><div class="flex items-center gap-2 flex-wrap"><i class="fa-solid ${res.isCorrect ? 'fa-circle-check text-emerald-500' : 'fa-circle-xmark text-rose-500'}" aria-hidden="true"></i><span class="font-bold text-slate-900">${escapeHtml(w.word)}</span><span class="text-xs text-slate-500">${escapeHtml(w.pos || '')}</span><span class="text-xs font-semibold bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded">下次複習：${formatNextReviewLabel(w)}</span>${(w.wrongCount || 0) > 0 ? `<span class="text-xs font-bold bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded">累計錯 ${w.wrongCount} 次</span>` : ''}<button type="button" data-speak="${escapeHtml(w.word)}" onclick="speakText(this.dataset.speak)" aria-label="朗讀 ${escapeHtml(w.word)}" class="text-slate-400 hover:text-brand-600 text-xs"><i class="fa-solid fa-volume-high" aria-hidden="true"></i></button></div><p class="text-xs text-slate-700">${escapeHtml(w.meaning)}</p>${!res.isCorrect ? `<p class="text-xs text-rose-600">您的作答：${escapeHtml(res.userAnswer)}</p>` : ''}${res.explanation ? `<p class="text-xs text-indigo-800 bg-indigo-50/70 px-2.5 py-1.5 rounded-lg mt-1 leading-relaxed"><strong>詳解：</strong>${escapeHtml(res.explanation)}</p>` : ''}</div><button type="button" data-word-id="${escapeHtml(w.id)}" onclick="openWordDetail(this.dataset.wordId)" class="text-xs font-semibold text-brand-600 hover:underline shrink-0">查看詳情</button></div>`;
       }).join('');
     }
 
@@ -2507,7 +2569,11 @@
         if (mode === 'overwrite') {
           const idMap = new Map();
           parsed.lists.forEach((l, idx) => idMap.set(l.id, sanitizeSafeId(l.id, `list-${idx}`)));
-          const safeLists = parsed.lists.map(l => ({ id: idMap.get(l.id), name: String(l.name || '未命名清單').trim(), parentId: l.parentId && idMap.has(l.parentId) ? idMap.get(l.parentId) : null }));
+          const safeLists = parsed.lists.map(l => {
+            const selfId = idMap.get(l.id);
+            const mappedParent = l.parentId && idMap.has(l.parentId) ? idMap.get(l.parentId) : null;
+            return { id: selfId, name: String(l.name || '未命名清單').trim(), parentId: mappedParent === selfId ? null : mappedParent };
+          });
           const validListIds = new Set(safeLists.map(l => l.id));
           const safeWords = parsed.words.filter(w => w && typeof w.word === 'string' && w.word.trim().length > 0).map((w, idx) => {
             const mappedListId = idMap.has(w.listId) ? idMap.get(w.listId) : sanitizeSafeId(w.listId, 'list');
@@ -2552,11 +2618,11 @@
     }
 
     function resetAllUnfamiliarStats() {
-      showCustomConfirm('重置所有 SRS 記憶與不熟紀錄', '確定要將全部單字的 SRS 間隔天數、答錯與答對次數歸零嗎？單字本身不會被刪除。', () => {
+      showCustomConfirm('重置所有學習與不熟紀錄', '確定要將全部單字的複習間隔天數、答錯與答對次數歸零嗎？單字本身不會被刪除。', () => {
         appData.words.forEach(w => { w.wrongCount = 0; w.correctCount = 0; w.interval = 0; w.easeFactor = 2.5; w.nextReviewAt = 0; });
         localStorage.removeItem(STORAGE_KEYS.DAILY_NEW_TRACKER);
         saveAppData(); renderAllListsUI(); renderWordCards();
-        showToast('已重置所有單字的間隔重複與不熟統計', 'info');
+        showToast('已重置所有單字的複習排程與不熟統計', 'info');
       });
     }
 
