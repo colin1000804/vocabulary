@@ -64,7 +64,7 @@
         </div>
         <div>
           <h1 class="font-bold text-lg tracking-tight text-slate-900 leading-tight">VocabMaster <span class="text-brand-600">AI</span></h1>
-          <p class="text-[11px] text-slate-500 hidden sm:block">隨開隨測・AI 語境造句・搭配詞與衍生字庫</p>
+          <p class="text-[11px] text-slate-500 hidden sm:block">階層清單・優先不熟單・AI 語境造句測驗</p>
         </div>
       </div>
 
@@ -95,25 +95,39 @@
     <!-- ==================== 分頁 1：單字庫管理 ==================== -->
     <section id="tab-lists" class="animate-fade-in space-y-5">
       
-      <!-- 範圍清單選擇列與管理操作 -->
+      <!-- 階層式範圍清單選擇列與管理操作 -->
       <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 space-y-3">
         <div class="flex items-center justify-between">
           <h2 class="text-sm font-bold text-slate-700 flex items-center gap-2">
-            <i class="fa-solid fa-folder-open text-brand-500"></i> 單字範圍清單
+            <i class="fa-solid fa-folder-tree text-brand-500"></i> 單字範圍清單
           </h2>
-          <button onclick="openListModal('create')" class="text-xs font-semibold bg-brand-50 text-brand-600 hover:bg-brand-100 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5">
-            <i class="fa-solid fa-plus"></i> 新增清單
-          </button>
+          <div class="flex items-center gap-1.5">
+            <button id="btn-add-sublist" onclick="openListModal('create-sub')" class="hidden text-xs font-semibold bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+              <i class="fa-solid fa-folder-plus"></i> 新增子清單
+            </button>
+            <button onclick="openListModal('create-main')" class="text-xs font-semibold bg-brand-50 text-brand-600 hover:bg-brand-100 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5">
+              <i class="fa-solid fa-plus"></i> 新增主清單
+            </button>
+          </div>
         </div>
 
-        <!-- 清單膠囊橫向捲動列 -->
-        <div id="list-pills-container" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1"></div>
+        <!-- 第一層：主清單膠囊橫向捲動列 -->
+        <div id="main-list-pills-container" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1"></div>
+
+        <!-- 第二層：子清單膠囊列（當選取某個主清單時顯示） -->
+        <div id="sub-list-bar" class="hidden pt-2 border-t border-dashed border-slate-200 space-y-1.5">
+          <div class="text-[11px] font-semibold text-slate-400 flex items-center gap-1">
+            <i class="fa-solid fa-turn-up rotate-90 text-brand-400"></i> 子清單分類：
+          </div>
+          <div id="sub-list-pills-container" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5"></div>
+        </div>
 
         <!-- 當前清單操作列 -->
         <div class="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
             <span id="current-list-title" class="font-bold text-slate-800 text-sm">載入中...</span>
             <span id="current-list-count" class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium">0 個單字</span>
+            <span id="current-list-unfamiliar-count" class="hidden bg-rose-50 text-rose-600 border border-rose-100 px-2 py-0.5 rounded-full font-semibold">0 個不熟</span>
           </div>
           <div id="current-list-actions" class="flex items-center gap-2">
             <button onclick="openListModal('rename')" class="p-1.5 text-slate-500 hover:text-brand-600 hover:bg-slate-100 rounded-lg transition-colors">
@@ -126,11 +140,16 @@
         </div>
       </div>
 
-      <!-- 搜尋與新增單字操作區 -->
+      <!-- 搜尋、篩選不熟單與新增單字操作區 -->
       <div class="flex flex-col sm:flex-row gap-2.5">
-        <div class="relative flex-1">
-          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-          <input type="text" id="word-search-input" oninput="renderWordCards()" placeholder="搜尋清單內的英文單字或中文解釋..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition-all" />
+        <div class="relative flex-1 flex gap-2">
+          <div class="relative flex-1">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+            <input type="text" id="word-search-input" oninput="renderWordCards()" placeholder="搜尋英文單字或中文解釋..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition-all" />
+          </div>
+          <button type="button" id="btn-filter-unfamiliar" onclick="toggleUnfamiliarFilter()" class="px-3 py-2.5 bg-white border border-slate-200 hover:border-rose-300 text-slate-600 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 shrink-0" title="只顯示曾答錯的不熟單字">
+            <i class="fa-solid fa-fire text-rose-500"></i> <span class="hidden sm:inline">只看不熟</span>
+          </button>
         </div>
         <div class="flex gap-2 shrink-0">
           <button onclick="openBatchModal()" class="flex-1 sm:flex-none bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-semibold px-4 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-sm">
@@ -156,27 +175,63 @@
             <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
               <i class="fa-solid fa-wand-magic-sparkles text-brand-600"></i> 建立隨堂測驗
             </h2>
-            <p class="text-xs text-slate-500 mt-0.5">自由組合測驗範圍、題數與測驗模式，隨時隨地強化記憶。</p>
+            <p class="text-xs text-slate-500 mt-0.5">支援跨主/子清單自由複選，並可開啟「優先不熟單模式」針對弱點強化。</p>
           </div>
 
-          <!-- 1. 選擇測驗範圍 -->
+          <!-- 1. 選擇測驗範圍（階層式清單複選） -->
           <div class="space-y-2.5">
             <div class="flex items-center justify-between">
-              <label class="text-sm font-bold text-slate-700">1. 選擇測驗範圍（可複選）</label>
+              <label class="text-sm font-bold text-slate-700">1. 選擇測驗範圍（可複選主清單或子清單）</label>
               <button onclick="toggleSelectAllQuizLists()" id="btn-toggle-all-lists" class="text-xs font-semibold text-brand-600 hover:text-brand-700 bg-brand-50 px-2.5 py-1 rounded-lg transition-colors">
                 全選所有清單
               </button>
             </div>
-            <div id="quiz-lists-selector" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
-            <div class="text-xs text-slate-500 flex items-center justify-between bg-slate-50 px-3 py-2 rounded-xl border border-slate-100">
-              <span>目前選定範圍總單字數：</span>
-              <span id="quiz-selected-total-words" class="font-bold text-brand-600 text-sm">0 題可用</span>
+            <div id="quiz-lists-selector" class="space-y-2.5"></div>
+            <div class="text-xs text-slate-500 flex flex-wrap items-center justify-between gap-2 bg-slate-50 px-3.5 py-2.5 rounded-xl border border-slate-100">
+              <span>選定範圍總計：<strong id="quiz-selected-total-words" class="text-brand-600">0 字</strong></span>
+              <span>其中不熟單字：<strong id="quiz-selected-unfamiliar-words" class="text-rose-600">0 字</strong></span>
             </div>
           </div>
 
-          <!-- 2. 選擇測驗模式 -->
+          <!-- 2. 選擇出題順序策略（優先不熟單模式） -->
           <div class="space-y-2.5">
-            <label class="text-sm font-bold text-slate-700 block">2. 選擇測驗模式</label>
+            <label class="text-sm font-bold text-slate-700 block">2. 選擇出題策略（熟練度排程）</label>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <label class="cursor-pointer flex items-start gap-2.5 p-3 rounded-xl border-2 transition-all border-brand-600 bg-brand-50/40" id="priority-card-smart">
+                <input type="radio" name="quizPriority" value="smart" checked onchange="updateQuizPriorityUI()" class="mt-1 accent-brand-600">
+                <div>
+                  <div class="font-bold text-xs text-slate-900 flex items-center gap-1">
+                    <i class="fa-solid fa-fire text-rose-500"></i> 優先不熟單
+                  </div>
+                  <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">優先抽出答錯多次與尚未測驗的單字，其餘隨機補足。</p>
+                </div>
+              </label>
+
+              <label class="cursor-pointer flex items-start gap-2.5 p-3 rounded-xl border-2 transition-all border-slate-200 hover:border-slate-300" id="priority-card-unfamiliar_only">
+                <input type="radio" name="quizPriority" value="unfamiliar_only" onchange="updateQuizPriorityUI()" class="mt-1 accent-brand-600">
+                <div>
+                  <div class="font-bold text-xs text-slate-900 flex items-center gap-1">
+                    <i class="fa-solid fa-bullseye text-amber-500"></i> 僅測驗不熟單
+                  </div>
+                  <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">只從範圍內「曾答錯」的單字出題，集中消滅弱點。</p>
+                </div>
+              </label>
+
+              <label class="cursor-pointer flex items-start gap-2.5 p-3 rounded-xl border-2 transition-all border-slate-200 hover:border-slate-300" id="priority-card-random">
+                <input type="radio" name="quizPriority" value="random" onchange="updateQuizPriorityUI()" class="mt-1 accent-brand-600">
+                <div>
+                  <div class="font-bold text-xs text-slate-900 flex items-center gap-1">
+                    <i class="fa-solid fa-shuffle text-indigo-500"></i> 完全隨機出題
+                  </div>
+                  <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">不分熟練度，範圍內所有單字平均隨機抽取。</p>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- 3. 選擇測驗題型 -->
+          <div class="space-y-2.5">
+            <label class="text-sm font-bold text-slate-700 block">3. 選擇測驗題型</label>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label class="cursor-pointer relative flex items-start gap-3 p-3.5 rounded-xl border-2 transition-all border-brand-600 bg-brand-50/40" id="mode-card-cloze">
                 <input type="radio" name="quizMode" value="cloze" checked onchange="updateQuizModeUI()" class="mt-1 accent-brand-600">
@@ -202,9 +257,9 @@
             </div>
           </div>
 
-          <!-- 3. 測驗題數設定 -->
+          <!-- 4. 測驗題數設定 -->
           <div class="space-y-2.5">
-            <label class="text-sm font-bold text-slate-700 block">3. 設定測驗題數</label>
+            <label class="text-sm font-bold text-slate-700 block">4. 設定測驗題數</label>
             <div class="flex flex-wrap items-center gap-2">
               <button type="button" onclick="setQuizCount(5, this)" class="count-preset-btn px-3.5 py-2 rounded-xl text-xs font-semibold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-all">5 題</button>
               <button type="button" onclick="setQuizCount(10, this)" class="count-preset-btn px-3.5 py-2 rounded-xl text-xs font-semibold border border-brand-600 bg-brand-50 text-brand-700 transition-all">10 題</button>
@@ -249,8 +304,11 @@
           </div>
 
           <div class="space-y-4">
-            <div class="flex items-center justify-between">
-              <span id="quiz-mode-badge" class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700">填空選擇題</span>
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <div class="flex items-center gap-2">
+                <span id="quiz-mode-badge" class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700">填空選擇題</span>
+                <span id="quiz-word-status-badge" class="hidden text-[11px] font-semibold px-2 py-0.5 rounded-md bg-rose-50 text-rose-600 border border-rose-100"></span>
+              </div>
               <button id="quiz-tts-btn" onclick="speakCurrentQuizWord()" class="hidden text-xs font-medium text-slate-500 hover:text-brand-600 bg-slate-100 hover:bg-brand-50 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1">
                 <i class="fa-solid fa-volume-high"></i> 朗讀解答
               </button>
@@ -277,7 +335,7 @@
           </div>
           <div>
             <h3 class="text-xl font-bold text-slate-900">測驗完成！</h3>
-            <p class="text-xs text-slate-500 mt-1" id="result-summary-subtitle">本次測驗成績統計如下</p>
+            <p class="text-xs text-slate-500 mt-1" id="result-summary-subtitle">答題紀錄已自動更新至各單字的熟練度統計</p>
           </div>
 
           <div class="grid grid-cols-3 gap-3 max-w-md mx-auto pt-2">
@@ -324,7 +382,7 @@
             <i class="fa-solid fa-key text-amber-500"></i> Gemini API 金鑰與模型設定
           </h2>
           <p class="text-xs text-slate-500 mt-1 leading-relaxed">
-            設定您的 Google Gemini API Key，即可啟用「新增單字自動補全」與「測驗時 AI 即時造句」功能。資料僅儲存於您的瀏覽器本機（localStorage）。
+            設定您的 Google Gemini API Key，即可啟用「單字自動補全」、「批次建字」與「測驗時 AI 即時造句」功能。資料僅儲存於您的瀏覽器本機（localStorage）。
           </p>
         </div>
 
@@ -340,10 +398,9 @@
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">AI 模型選擇（若遇模型汰舊可隨時切換或自訂）</label>
+            <label class="block text-xs font-bold text-slate-700 mb-1">AI 模型選擇（預設為高速穩定的 3.1 Flash-Lite）</label>
             <select id="gemini-model-select" onchange="onModelSelectChange()" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-brand-500">
-              <option value="gemini-flash-latest">gemini-flash-latest（官方自動指向最新可用版・推薦）</option>
-              <option value="gemini-3.1-flash-lite-preview">gemini-3.1-flash-lite-preview（極速輕量版）</option>
+              <option value="gemini-3.1-flash-lite-preview">gemini-3.1-flash-lite-preview（極速輕量版・推薦預設）</option>
               <option value="gemini-3-flash-preview">gemini-3-flash-preview（標準最新版）</option>
               <option value="custom">自訂輸入其他模型代號...</option>
             </select>
@@ -372,7 +429,7 @@
             <i class="fa-solid fa-cloud-arrow-up text-brand-600"></i> 資料備份與跨裝置轉移 (JSON)
           </h2>
           <p class="text-xs text-slate-500 mt-1 leading-relaxed">
-            將您建立的所有單字清單與學習資料匯出為 `.json` 檔案，方便在電腦與手機之間互相轉移或永久保存。
+            將您建立的所有階層清單、單字詳情與不熟單紀錄匯出為 `.json` 檔案，方便在電腦與手機之間互相轉移或永久保存。
           </p>
         </div>
 
@@ -382,7 +439,7 @@
               <div class="font-bold text-sm text-slate-800 flex items-center gap-1.5">
                 <i class="fa-solid fa-file-export text-indigo-600"></i> 匯出完整單字庫
               </div>
-              <p class="text-xs text-slate-500 mt-1">下載包含所有清單與單字詳情的 JSON 備份檔。</p>
+              <p class="text-xs text-slate-500 mt-1">下載包含主/子清單、單字詳情與錯題統計的 JSON 備份檔。</p>
             </div>
             <button onclick="exportDataToJson()" class="w-full py-2.5 bg-white hover:bg-indigo-50 text-indigo-600 border border-indigo-200 font-semibold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 shadow-2xs">
               <i class="fa-solid fa-download"></i> 下載 JSON 備份檔
@@ -403,8 +460,10 @@
           </div>
         </div>
 
-        <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
-          <span class="text-xs text-slate-500">想重新體驗系統內建的精選單字範例？</span>
+        <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+          <button onclick="resetAllUnfamiliarStats()" class="text-xs font-semibold text-rose-600 hover:underline">
+            重置所有單字的不熟紀錄
+          </button>
           <button onclick="restoreDefaultSampleData()" class="text-xs font-semibold text-slate-600 hover:text-brand-600 underline">
             還原預設範例清單
           </button>
@@ -443,6 +502,7 @@
             </button>
           </div>
           <p id="detail-meaning" class="text-base font-semibold text-slate-700 mt-1">中文解釋</p>
+          <div id="detail-familiarity-bar" class="mt-2 flex items-center gap-2 text-xs"></div>
         </div>
         <button onclick="closeModal('modal-word-detail')" class="w-8 h-8 rounded-full bg-slate-200/70 hover:bg-slate-300 text-slate-600 flex items-center justify-center transition-colors">
           <i class="fa-solid fa-xmark"></i>
@@ -485,13 +545,18 @@
         </div>
       </div>
 
-      <div class="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-3">
-        <button onclick="deleteCurrentDetailWord()" class="px-4 py-2 text-rose-600 hover:bg-rose-100/70 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5">
-          <i class="fa-solid fa-trash-can"></i> 刪除單字
+      <div class="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-2">
+        <button onclick="deleteCurrentDetailWord()" class="px-3.5 py-2 text-rose-600 hover:bg-rose-100/70 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5">
+          <i class="fa-solid fa-trash-can"></i> 刪除
         </button>
-        <button onclick="editCurrentDetailWord()" class="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-xs">
-          <i class="fa-solid fa-pen-to-square"></i> 編輯單字內容
-        </button>
+        <div class="flex items-center gap-2">
+          <button onclick="toggleCurrentWordUnfamiliar()" id="btn-toggle-word-unfamiliar" class="px-3.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-xl text-xs font-semibold transition-colors">
+            標記為不熟
+          </button>
+          <button onclick="editCurrentDetailWord()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-xs">
+            <i class="fa-solid fa-pen-to-square"></i> 編輯
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -510,7 +575,7 @@
         <input type="hidden" id="form-word-id" />
         
         <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">儲存至單字清單</label>
+          <label class="block text-xs font-bold text-slate-700 mb-1">儲存至單字清單（主清單或子清單）</label>
           <select id="form-list-select" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-brand-500"></select>
         </div>
 
@@ -522,7 +587,6 @@
               <i class="fa-solid fa-wand-magic-sparkles"></i> AI 自動補全
             </button>
           </div>
-          <p class="text-[11px] text-slate-400 mt-1">輸入單字後點擊「AI 自動補全」，將自動填寫字義、例句、搭配詞、片語與衍生字。</p>
         </div>
 
         <div class="grid grid-cols-3 gap-2.5">
@@ -584,7 +648,7 @@
 
       <div class="space-y-3 text-sm">
         <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">存入目標清單</label>
+          <label class="block text-xs font-bold text-slate-700 mb-1">存入目標清單（主清單或子清單）</label>
           <select id="batch-list-select" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-brand-500"></select>
         </div>
 
@@ -608,11 +672,23 @@
     </div>
   </div>
 
-  <!-- ==================== 彈出視窗 3：新增 / 重新命名清單 ==================== -->
+  <!-- ==================== 彈出視窗 3：新增 / 重新命名清單（支援選擇主清單或子清單） ==================== -->
   <div id="modal-list-form" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-sm rounded-2xl shadow-xl p-5 space-y-4 animate-fade-in">
       <h3 id="list-modal-title" class="font-bold text-base text-slate-900">新增單字清單</h3>
-      <input type="text" id="list-name-input" placeholder="例如：多益核心 500、商業書信..." class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:border-brand-500" />
+      
+      <div id="list-parent-wrapper" class="space-y-1">
+        <label class="block text-xs font-bold text-slate-700">所屬層級</label>
+        <select id="list-parent-select" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:border-brand-500">
+          <option value="">建立為最上層「主清單」</option>
+        </select>
+      </div>
+
+      <div class="space-y-1">
+        <label class="block text-xs font-bold text-slate-700">清單名稱</label>
+        <input type="text" id="list-name-input" placeholder="例如：Unit 1、商務合約篇..." class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:border-brand-500" />
+      </div>
+
       <div class="flex justify-end gap-2">
         <button onclick="closeModal('modal-list-form')" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">取消</button>
         <button onclick="submitListModal()" class="px-5 py-2 text-xs font-semibold bg-brand-600 hover:bg-brand-700 text-white rounded-xl">確定</button>
@@ -668,8 +744,9 @@
 
     const DEFAULT_SAMPLE_DATA = {
       lists: [
-        { id: 'list-toeic', name: '多益核心必考' },
-        { id: 'list-daily', name: '高頻日常與職場' }
+        { id: 'list-toeic', name: '多益核心必考', parentId: null },
+        { id: 'list-toeic-contract', name: '商務合約篇', parentId: 'list-toeic' },
+        { id: 'list-daily', name: '高頻日常與職場', parentId: null }
       ],
       words: [
         {
@@ -680,9 +757,11 @@
           meaning: '實施，執行，貫徹',
           exampleEn: 'The company plans to implement a new flexible working policy next month.',
           exampleZh: '公司計劃下個月實施新的彈性工時政策。',
-          collocations: ['implement a policy (實施政策)', 'implement changes (執行變革)', 'fully implement (全面落實)'],
+          collocations: ['implement a policy (實施政策)', 'implement changes (執行變革)'],
           phrases: ['implement a plan into action (將計畫付諸行動)'],
-          derivatives: ['implementation (n. 實施，執行)', 'implementer (n. 執行者)']
+          derivatives: ['implementation (n. 實施，執行)', 'implementer (n. 執行者)'],
+          wrongCount: 1,
+          correctCount: 0
         },
         {
           id: 'w-2',
@@ -692,25 +771,29 @@
           meaning: '大量的，可觀的，實質的',
           exampleEn: 'We have made substantial progress in reducing production costs this quarter.',
           exampleZh: '本季我們在降低生產成本方面取得了實質性的進展。',
-          collocations: ['substantial amount (可觀的數量)', 'substantial progress (實質進展)', 'substantial evidence (確鑿證據)'],
+          collocations: ['substantial amount (可觀的數量)', 'substantial progress (實質進展)'],
           phrases: ['in substantial agreement (基本達成一致)'],
-          derivatives: ['substantially (adv. 大大地，實質上)', 'substance (n. 物質，實質)']
+          derivatives: ['substantially (adv. 大大地)', 'substance (n. 物質)'],
+          wrongCount: 0,
+          correctCount: 0
         },
         {
           id: 'w-3',
-          listId: 'list-toeic',
+          listId: 'list-toeic-contract',
           word: 'negotiate',
           pos: 'v.',
           meaning: '協商，談判，議定',
           exampleEn: 'Both parties agreed to meet next week to negotiate the terms of the contract.',
           exampleZh: '雙方同意下週會面，就合約條款進行談判。',
-          collocations: ['negotiate a contract (協商合約)', 'negotiate a price (議價)', 'negotiate with (與...談判)'],
+          collocations: ['negotiate a contract (協商合約)', 'negotiate a price (議價)'],
           phrases: ['open to negotiation (有協商餘地)'],
-          derivatives: ['negotiation (n. 談判，協商)', 'negotiable (adj. 可協商的)']
+          derivatives: ['negotiation (n. 談判，協商)', 'negotiable (adj. 可協商的)'],
+          wrongCount: 2,
+          correctCount: 0
         },
         {
           id: 'w-4',
-          listId: 'list-toeic',
+          listId: 'list-toeic-contract',
           word: 'accommodate',
           pos: 'v.',
           meaning: '容納，提供住宿，順應',
@@ -718,7 +801,9 @@
           exampleZh: '這座新會議廳最多可舒適地容納五百位賓客。',
           collocations: ['accommodate needs (滿足需求)', 'accommodate guests (接待賓客)'],
           phrases: ['accommodate oneself to (使自己適應...)'],
-          derivatives: ['accommodation (n. 住宿，膳宿)', 'accommodating (adj. 樂於助人的)']
+          derivatives: ['accommodation (n. 住宿)', 'accommodating (adj. 樂於助人的)'],
+          wrongCount: 0,
+          correctCount: 0
         },
         {
           id: 'w-5',
@@ -730,22 +815,12 @@
           exampleZh: '隨著科技的快速進步，就業市場的變化是不可避免的。',
           collocations: ['inevitable consequence (必然結果)', 'almost inevitable (幾乎無可避免)'],
           phrases: ['accept the inevitable (接受無可避免的事實)'],
-          derivatives: ['inevitably (adv. 不可避免地)', 'inevitability (n. 必然性)']
+          derivatives: ['inevitably (adv. 不可避免地)', 'inevitability (n. 必然性)'],
+          wrongCount: 0,
+          correctCount: 0
         },
         {
           id: 'w-6',
-          listId: 'list-daily',
-          word: 'compromise',
-          pos: 'n. / v.',
-          meaning: '妥協，折衷，危害',
-          exampleEn: 'After hours of discussion, the two teams finally reached a fair compromise.',
-          exampleZh: '經過數小時的討論，兩個團隊終於達成了公平的妥協。',
-          collocations: ['reach a compromise (達成妥協)', 'compromise safety (危及安全)'],
-          phrases: ['without compromise (毫不妥協地)'],
-          derivatives: ['compromising (adj. 妥協的，有損名譽的)']
-        },
-        {
-          id: 'w-7',
           listId: 'list-daily',
           word: 'resilient',
           pos: 'adj.',
@@ -754,19 +829,26 @@
           exampleZh: '在經濟低迷時期，小型企業展現出了驚人的韌性。',
           collocations: ['resilient economy (具韌性的經濟)', 'emotionally resilient (心理韌性強的)'],
           phrases: ['bounce back and stay resilient (迅速反彈並保持韌性)'],
-          derivatives: ['resilience (n. 韌性，恢復力)', 'resiliently (adv. 有彈性地)']
+          derivatives: ['resilience (n. 韌性，恢復力)', 'resiliently (adv. 有彈性地)'],
+          wrongCount: 1,
+          correctCount: 0
         }
       ]
     };
 
     let appData = { lists: [], words: [] };
-    let currentListId = 'ALL';
+    // 階層檢視狀態：activeMainListId = 'ALL' 或主清單 ID；activeSubListId = 'ALL_SUB' 或子清單 ID
+    let activeMainListId = 'ALL';
+    let activeSubListId = 'ALL_SUB';
+    let filterUnfamiliarOnly = false;
+
     let currentDetailWordId = null;
-    let listModalMode = 'create';
+    let listModalMode = 'create-main'; // 'create-main' | 'create-sub' | 'rename'
     let pendingImportData = null;
 
     let quizConfig = {
       selectedListIds: [],
+      priority: 'smart', // 'smart' | 'unfamiliar_only' | 'random'
       mode: 'cloze',
       count: 10,
       isAllCount: false
@@ -794,7 +876,16 @@
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed.lists) && Array.isArray(parsed.words)) {
-            appData = parsed;
+            // 相容舊資料：補齊 parentId 與 wrongCount / correctCount
+            appData.lists = parsed.lists.map(l => ({
+              ...l,
+              parentId: l.parentId || null
+            }));
+            appData.words = parsed.words.map(w => ({
+              ...w,
+              wrongCount: typeof w.wrongCount === 'number' ? w.wrongCount : 0,
+              correctCount: typeof w.correctCount === 'number' ? w.correctCount : 0
+            }));
             return;
           }
         }
@@ -818,11 +909,33 @@
     }
 
     function getSelectedModel() {
-      const saved = localStorage.getItem(STORAGE_KEYS.MODEL) || 'gemini-flash-latest';
+      const saved = localStorage.getItem(STORAGE_KEYS.MODEL) || 'gemini-3.1-flash-lite-preview';
       if (saved === 'custom') {
-        return (localStorage.getItem(STORAGE_KEYS.CUSTOM_MODEL) || 'gemini-flash-latest').trim();
+        return (localStorage.getItem(STORAGE_KEYS.CUSTOM_MODEL) || 'gemini-3.1-flash-lite-preview').trim();
       }
       return saved;
+    }
+
+    // 判斷單字是否屬於「不熟單」
+    function isWordUnfamiliar(w) {
+      return (w.wrongCount || 0) > 0;
+    }
+
+    // 取得某主清單包含自身與所有子清單的 ID 陣列
+    function getMainListFamilyIds(mainListId) {
+      const subIds = appData.lists.filter(l => l.parentId === mainListId).map(l => l.id);
+      return [mainListId, ...subIds];
+    }
+
+    // 取得清單完整階層顯示名稱
+    function getListFullPathName(listId) {
+      const list = appData.lists.find(l => l.id === listId);
+      if (!list) return '';
+      if (list.parentId) {
+        const parent = appData.lists.find(l => l.id === list.parentId);
+        return parent ? `${parent.name} / ${list.name}` : list.name;
+      }
+      return list.name;
     }
 
     function switchTab(tabName) {
@@ -844,6 +957,9 @@
 
       if (tabName === 'quiz') {
         initQuizSetupUI();
+      } else if (tabName === 'lists') {
+        renderAllListsUI();
+        renderWordCards();
       }
     }
 
@@ -916,75 +1032,25 @@
     }
 
     // ==========================================
-    // 單字清單與單字卡片管理
+    // 階層式單字清單與單字卡片管理
     // ==========================================
-    function renderAllListsUI() {
-      const container = document.getElementById('list-pills-container');
-      container.innerHTML = '';
+    function getFilteredWordsForCurrentView() {
+      let filtered = appData.words;
 
-      const allBtn = document.createElement('button');
-      const isAllActive = currentListId === 'ALL';
-      allBtn.className = `px-3.5 py-1.5 rounded-full text-xs font-semibold shrink-0 transition-all border ${
-        isAllActive
-          ? 'bg-brand-600 text-white border-brand-600 shadow-xs'
-          : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
-      }`;
-      allBtn.innerHTML = `全部單字 <span class="opacity-80">(${appData.words.length})</span>`;
-      allBtn.onclick = () => {
-        currentListId = 'ALL';
-        renderAllListsUI();
-        renderWordCards();
-      };
-      container.appendChild(allBtn);
-
-      appData.lists.forEach(list => {
-        const count = appData.words.filter(w => w.listId === list.id).length;
-        const isActive = currentListId === list.id;
-        const btn = document.createElement('button');
-        btn.className = `px-3.5 py-1.5 rounded-full text-xs font-semibold shrink-0 transition-all border ${
-          isActive
-            ? 'bg-brand-600 text-white border-brand-600 shadow-xs'
-            : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
-        }`;
-        btn.innerHTML = `${escapeHtml(list.name)} <span class="opacity-80">(${count})</span>`;
-        btn.onclick = () => {
-          currentListId = list.id;
-          renderAllListsUI();
-          renderWordCards();
-        };
-        container.appendChild(btn);
-      });
-
-      const titleEl = document.getElementById('current-list-title');
-      const countEl = document.getElementById('current-list-count');
-      const actionsEl = document.getElementById('current-list-actions');
-
-      if (currentListId === 'ALL') {
-        titleEl.textContent = '所有已儲存單字';
-        countEl.textContent = `${appData.words.length} 個單字`;
-        actionsEl.classList.add('hidden');
-      } else {
-        const listObj = appData.lists.find(l => l.id === currentListId);
-        if (listObj) {
-          const count = appData.words.filter(w => w.listId === listObj.id).length;
-          titleEl.textContent = listObj.name;
-          countEl.textContent = `${count} 個單字`;
-          actionsEl.classList.remove('hidden');
+      if (activeMainListId !== 'ALL') {
+        if (activeSubListId !== 'ALL_SUB') {
+          filtered = filtered.filter(w => w.listId === activeSubListId);
         } else {
-          currentListId = 'ALL';
-          renderAllListsUI();
+          const familyIds = getMainListFamilyIds(activeMainListId);
+          filtered = filtered.filter(w => familyIds.includes(w.listId));
         }
       }
-    }
 
-    function renderWordCards() {
-      const grid = document.getElementById('word-cards-grid');
-      const keyword = (document.getElementById('word-search-input').value || '').trim().toLowerCase();
-
-      let filtered = appData.words;
-      if (currentListId !== 'ALL') {
-        filtered = filtered.filter(w => w.listId === currentListId);
+      if (filterUnfamiliarOnly) {
+        filtered = filtered.filter(w => isWordUnfamiliar(w));
       }
+
+      const keyword = (document.getElementById('word-search-input').value || '').trim().toLowerCase();
       if (keyword) {
         filtered = filtered.filter(w =>
           w.word.toLowerCase().includes(keyword) ||
@@ -992,32 +1058,203 @@
         );
       }
 
+      return filtered;
+    }
+
+    function renderAllListsUI() {
+      const mainContainer = document.getElementById('main-list-pills-container');
+      const subBar = document.getElementById('sub-list-bar');
+      const subContainer = document.getElementById('sub-list-pills-container');
+      const btnAddSublist = document.getElementById('btn-add-sublist');
+
+      mainContainer.innerHTML = '';
+
+      // 1. 「全部單字」膠囊
+      const allBtn = document.createElement('button');
+      const isAllActive = activeMainListId === 'ALL';
+      allBtn.className = `px-3.5 py-1.5 rounded-full text-xs font-semibold shrink-0 transition-all border ${
+        isAllActive
+          ? 'bg-brand-600 text-white border-brand-600 shadow-xs'
+          : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+      }`;
+      allBtn.innerHTML = `全部單字 <span class="opacity-80">(${appData.words.length})</span>`;
+      allBtn.onclick = () => {
+        activeMainListId = 'ALL';
+        activeSubListId = 'ALL_SUB';
+        renderAllListsUI();
+        renderWordCards();
+      };
+      mainContainer.appendChild(allBtn);
+
+      // 2. 第一層主清單膠囊 (parentId === null)
+      const mainLists = appData.lists.filter(l => !l.parentId);
+      mainLists.forEach(list => {
+        const familyIds = getMainListFamilyIds(list.id);
+        const count = appData.words.filter(w => familyIds.includes(w.listId)).length;
+        const subCount = appData.lists.filter(l => l.parentId === list.id).length;
+        const isActive = activeMainListId === list.id;
+
+        const btn = document.createElement('button');
+        btn.className = `px-3.5 py-1.5 rounded-full text-xs font-semibold shrink-0 transition-all border flex items-center gap-1.5 ${
+          isActive
+            ? 'bg-brand-600 text-white border-brand-600 shadow-xs'
+            : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+        }`;
+        btn.innerHTML = `
+          <i class="fa-regular fa-folder${isActive ? '-open' : ''} text-[11px]"></i>
+          <span>${escapeHtml(list.name)}</span>
+          <span class="opacity-80">(${count})</span>
+          ${subCount > 0 ? `<span class="text-[10px] px-1.5 py-0.2 rounded-full ${isActive ? 'bg-white/20 text-white' : 'bg-indigo-100 text-indigo-700'}">${subCount}子項</span>` : ''}
+        `;
+        btn.onclick = () => {
+          activeMainListId = list.id;
+          activeSubListId = 'ALL_SUB';
+          renderAllListsUI();
+          renderWordCards();
+        };
+        mainContainer.appendChild(btn);
+      });
+
+      // 3. 第二層子清單膠囊區
+      const titleEl = document.getElementById('current-list-title');
+      const countEl = document.getElementById('current-list-count');
+      const unfamEl = document.getElementById('current-list-unfamiliar-count');
+      const actionsEl = document.getElementById('current-list-actions');
+
+      if (activeMainListId === 'ALL') {
+        subBar.classList.add('hidden');
+        btnAddSublist.classList.add('hidden');
+        actionsEl.classList.add('hidden');
+        titleEl.textContent = '所有已儲存單字';
+        countEl.textContent = `${appData.words.length} 個單字`;
+        const unfamCount = appData.words.filter(isWordUnfamiliar).length;
+        unfamEl.textContent = `${unfamCount} 個不熟`;
+        unfamEl.classList.toggle('hidden', unfamCount === 0);
+      } else {
+        const mainObj = appData.lists.find(l => l.id === activeMainListId);
+        if (!mainObj) {
+          activeMainListId = 'ALL';
+          activeSubListId = 'ALL_SUB';
+          renderAllListsUI();
+          return;
+        }
+
+        btnAddSublist.classList.remove('hidden');
+        actionsEl.classList.remove('hidden');
+
+        const subLists = appData.lists.filter(l => l.parentId === mainObj.id);
+        if (subLists.length > 0) {
+          subBar.classList.remove('hidden');
+          subContainer.innerHTML = '';
+
+          // 「主清單內全部」膠囊
+          const familyIds = getMainListFamilyIds(mainObj.id);
+          const allSubCount = appData.words.filter(w => familyIds.includes(w.listId)).length;
+          const allSubBtn = document.createElement('button');
+          const isAllSub = activeSubListId === 'ALL_SUB';
+          allSubBtn.className = `px-3 py-1 rounded-lg text-xs font-semibold shrink-0 transition-all border ${
+            isAllSub
+              ? 'bg-indigo-600 text-white border-indigo-600'
+              : 'bg-indigo-50/60 text-indigo-700 border-indigo-200 hover:bg-indigo-100'
+          }`;
+          allSubBtn.textContent = `全部 (${allSubCount})`;
+          allSubBtn.onclick = () => {
+            activeSubListId = 'ALL_SUB';
+            renderAllListsUI();
+            renderWordCards();
+          };
+          subContainer.appendChild(allSubBtn);
+
+          // 各子清單膠囊
+          subLists.forEach(sub => {
+            const sCount = appData.words.filter(w => w.listId === sub.id).length;
+            const isSubActive = activeSubListId === sub.id;
+            const sBtn = document.createElement('button');
+            sBtn.className = `px-3 py-1 rounded-lg text-xs font-semibold shrink-0 transition-all border ${
+              isSubActive
+                ? 'bg-indigo-600 text-white border-indigo-600'
+                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+            }`;
+            sBtn.textContent = `${sub.name} (${sCount})`;
+            sBtn.onclick = () => {
+              activeSubListId = sub.id;
+              renderAllListsUI();
+              renderWordCards();
+            };
+            subContainer.appendChild(sBtn);
+          });
+        } else {
+          subBar.classList.add('hidden');
+        }
+
+        // 更新標題列與數量
+        if (activeSubListId !== 'ALL_SUB') {
+          const subObj = appData.lists.find(l => l.id === activeSubListId);
+          const scopeWords = appData.words.filter(w => w.listId === activeSubListId);
+          titleEl.textContent = subObj ? `${mainObj.name} / ${subObj.name}` : mainObj.name;
+          countEl.textContent = `${scopeWords.length} 個單字`;
+          const unfamCount = scopeWords.filter(isWordUnfamiliar).length;
+          unfamEl.textContent = `${unfamCount} 個不熟`;
+          unfamEl.classList.toggle('hidden', unfamCount === 0);
+        } else {
+          const familyIds = getMainListFamilyIds(mainObj.id);
+          const scopeWords = appData.words.filter(w => familyIds.includes(w.listId));
+          titleEl.textContent = mainObj.name;
+          countEl.textContent = `${scopeWords.length} 個單字`;
+          const unfamCount = scopeWords.filter(isWordUnfamiliar).length;
+          unfamEl.textContent = `${unfamCount} 個不熟`;
+          unfamEl.classList.toggle('hidden', unfamCount === 0);
+        }
+      }
+    }
+
+    function toggleUnfamiliarFilter() {
+      filterUnfamiliarOnly = !filterUnfamiliarOnly;
+      const btn = document.getElementById('btn-filter-unfamiliar');
+      if (filterUnfamiliarOnly) {
+        btn.className = 'px-3 py-2.5 bg-rose-600 border border-rose-600 text-white rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 shrink-0 shadow-xs';
+        btn.innerHTML = `<i class="fa-solid fa-fire"></i> <span class="hidden sm:inline">不熟篩選中</span>`;
+      } else {
+        btn.className = 'px-3 py-2.5 bg-white border border-slate-200 hover:border-rose-300 text-slate-600 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 shrink-0';
+        btn.innerHTML = `<i class="fa-solid fa-fire text-rose-500"></i> <span class="hidden sm:inline">只看不熟</span>`;
+      }
+      renderWordCards();
+    }
+
+    function renderWordCards() {
+      const grid = document.getElementById('word-cards-grid');
+      const filtered = getFilteredWordsForCurrentView();
+
       if (filtered.length === 0) {
         grid.innerHTML = `
           <div class="col-span-full bg-white rounded-2xl p-10 text-center border border-dashed border-slate-300 space-y-3">
             <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 mx-auto flex items-center justify-center text-xl">
               <i class="fa-solid fa-folder-open"></i>
             </div>
-            <div class="text-sm font-bold text-slate-700">目前沒有符合的單字</div>
-            <p class="text-xs text-slate-500">點擊上方「新增單字」或「批次 AI 建字」建立您的專屬單字庫！</p>
+            <div class="text-sm font-bold text-slate-700">${filterUnfamiliarOnly ? '太棒了！此範圍內目前沒有不熟單字' : '目前沒有符合的單字'}</div>
+            <p class="text-xs text-slate-500">${filterUnfamiliarOnly ? '您可以關閉「不熟篩選」檢視全部單字' : '點擊上方「新增單字」或「批次 AI 建字」建立您的專屬單字庫！'}</p>
           </div>
         `;
         return;
       }
 
       grid.innerHTML = filtered.map(w => {
-        const listObj = appData.lists.find(l => l.id === w.listId);
-        const listBadge = currentListId === 'ALL' && listObj
-          ? `<span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md truncate max-w-[100px]">${escapeHtml(listObj.name)}</span>`
+        const pathName = getListFullPathName(w.listId);
+        const listBadge = pathName
+          ? `<span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md truncate max-w-[130px]">${escapeHtml(pathName)}</span>`
+          : '';
+        const wrongBadge = (w.wrongCount || 0) > 0
+          ? `<span class="text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200 px-1.5 py-0.5 rounded-md flex items-center gap-1"><i class="fa-solid fa-fire text-[9px]"></i> 錯 ${w.wrongCount} 次</span>`
           : '';
 
         return `
-          <div onclick="openWordDetail('${w.id}')" class="cursor-pointer bg-white hover:border-brand-300 rounded-2xl p-4 shadow-2xs hover:shadow-md border border-slate-200/90 transition-all flex flex-col justify-between gap-2.5 group">
+          <div onclick="openWordDetail('${w.id}')" class="cursor-pointer bg-white hover:border-brand-300 rounded-2xl p-4 shadow-2xs hover:shadow-md border ${w.wrongCount > 0 ? 'border-rose-200/80' : 'border-slate-200/90'} transition-all flex flex-col justify-between gap-2.5 group">
             <div>
               <div class="flex items-start justify-between gap-2">
-                <div class="flex items-baseline gap-2 flex-wrap">
+                <div class="flex items-center gap-2 flex-wrap">
                   <h3 class="font-bold text-lg text-slate-900 group-hover:text-brand-600 transition-colors">${escapeHtml(w.word)}</h3>
                   <span class="text-xs font-semibold text-brand-600 bg-brand-50 px-1.5 py-0.5 rounded">${escapeHtml(w.pos || '')}</span>
+                  ${wrongBadge}
                 </div>
                 <button onclick="event.stopPropagation(); speakText('${escapeHtml(w.word)}')" class="w-8 h-8 rounded-full text-slate-400 hover:text-brand-600 hover:bg-brand-50 flex items-center justify-center transition-colors shrink-0" title="發音">
                   <i class="fa-solid fa-volume-high text-xs"></i>
@@ -1038,19 +1275,38 @@
       }).join('');
     }
 
+    // 清單新增（主清單/子清單）/重新命名/刪除
     function openListModal(mode) {
       listModalMode = mode;
       const titleEl = document.getElementById('list-modal-title');
       const inputEl = document.getElementById('list-name-input');
-      if (mode === 'create') {
-        titleEl.textContent = '新增單字清單';
+      const parentWrapper = document.getElementById('list-parent-wrapper');
+      const parentSelect = document.getElementById('list-parent-select');
+
+      // 填充主清單下拉選項
+      const mainLists = appData.lists.filter(l => !l.parentId);
+      parentSelect.innerHTML = `<option value="">建立為最上層「主清單」</option>` +
+        mainLists.map(m => `<option value="${m.id}">作為「${escapeHtml(m.name)}」的子清單</option>`).join('');
+
+      if (mode === 'create-main') {
+        titleEl.textContent = '新增主清單';
+        parentWrapper.classList.remove('hidden');
+        parentSelect.value = '';
+        inputEl.value = '';
+      } else if (mode === 'create-sub') {
+        titleEl.textContent = '新增子清單';
+        parentWrapper.classList.remove('hidden');
+        parentSelect.value = activeMainListId !== 'ALL' ? activeMainListId : '';
         inputEl.value = '';
       } else {
-        const listObj = appData.lists.find(l => l.id === currentListId);
+        const targetId = activeSubListId !== 'ALL_SUB' ? activeSubListId : activeMainListId;
+        const listObj = appData.lists.find(l => l.id === targetId);
         if (!listObj) return;
         titleEl.textContent = '重新命名清單';
+        parentWrapper.classList.add('hidden');
         inputEl.value = listObj.name;
       }
+
       openModal('modal-list-form');
       setTimeout(() => inputEl.focus(), 100);
     }
@@ -1061,18 +1317,33 @@
         showToast('請輸入清單名稱', 'warning');
         return;
       }
-      if (listModalMode === 'create') {
-        const newList = { id: 'list-' + Date.now(), name };
+
+      if (listModalMode === 'create-main' || listModalMode === 'create-sub') {
+        const parentId = document.getElementById('list-parent-select').value || null;
+        const newList = {
+          id: 'list-' + Date.now(),
+          name,
+          parentId
+        };
         appData.lists.push(newList);
-        currentListId = newList.id;
-        showToast(`已建立清單「${name}」`, 'success');
+        if (parentId) {
+          activeMainListId = parentId;
+          activeSubListId = newList.id;
+          showToast(`已建立子清單「${name}」`, 'success');
+        } else {
+          activeMainListId = newList.id;
+          activeSubListId = 'ALL_SUB';
+          showToast(`已建立主清單「${name}」`, 'success');
+        }
       } else {
-        const listObj = appData.lists.find(l => l.id === currentListId);
+        const targetId = activeSubListId !== 'ALL_SUB' ? activeSubListId : activeMainListId;
+        const listObj = appData.lists.find(l => l.id === targetId);
         if (listObj) {
           listObj.name = name;
           showToast('清單名稱已更新', 'success');
         }
       }
+
       saveAppData();
       renderAllListsUI();
       renderWordCards();
@@ -1080,22 +1351,61 @@
     }
 
     function confirmDeleteList() {
-      const listObj = appData.lists.find(l => l.id === currentListId);
+      const isSub = activeSubListId !== 'ALL_SUB';
+      const targetId = isSub ? activeSubListId : activeMainListId;
+      const listObj = appData.lists.find(l => l.id === targetId);
       if (!listObj) return;
-      const count = appData.words.filter(w => w.listId === listObj.id).length;
-      showCustomConfirm(
-        '刪除單字清單',
-        `確定要刪除「${listObj.name}」嗎？此清單內的 ${count} 個單字也會一併刪除，無法復原。`,
-        () => {
-          appData.lists = appData.lists.filter(l => l.id !== listObj.id);
-          appData.words = appData.words.filter(w => w.listId !== listObj.id);
-          currentListId = 'ALL';
-          saveAppData();
-          renderAllListsUI();
-          renderWordCards();
-          showToast('已刪除清單與其單字', 'info');
-        }
-      );
+
+      if (isSub) {
+        const count = appData.words.filter(w => w.listId === listObj.id).length;
+        showCustomConfirm(
+          '刪除子清單',
+          `確定要刪除子清單「${listObj.name}」嗎？裡面的 ${count} 個單字也會一併刪除。`,
+          () => {
+            appData.lists = appData.lists.filter(l => l.id !== listObj.id);
+            appData.words = appData.words.filter(w => w.listId !== listObj.id);
+            activeSubListId = 'ALL_SUB';
+            saveAppData();
+            renderAllListsUI();
+            renderWordCards();
+            showToast('已刪除子清單', 'info');
+          }
+        );
+      } else {
+        const familyIds = getMainListFamilyIds(listObj.id);
+        const count = appData.words.filter(w => familyIds.includes(w.listId)).length;
+        showCustomConfirm(
+          '刪除主清單',
+          `確定要刪除主清單「${listObj.name}」嗎？其底下所有子清單與共 ${count} 個單字都會一併刪除，無法復原。`,
+          () => {
+            appData.lists = appData.lists.filter(l => !familyIds.includes(l.id));
+            appData.words = appData.words.filter(w => !familyIds.includes(w.listId));
+            activeMainListId = 'ALL';
+            activeSubListId = 'ALL_SUB';
+            saveAppData();
+            renderAllListsUI();
+            renderWordCards();
+            showToast('已刪除主清單與其子清單', 'info');
+          }
+        );
+      }
+    }
+
+    // 填充包含階層縮排的清單下拉選單
+    function populateHierarchicalListSelect(selectEl, defaultListId) {
+      const mainLists = appData.lists.filter(l => !l.parentId);
+      let optionsHtml = '';
+      mainLists.forEach(m => {
+        optionsHtml += `<option value="${m.id}">📁 ${escapeHtml(m.name)}</option>`;
+        const subs = appData.lists.filter(s => s.parentId === m.id);
+        subs.forEach(s => {
+          optionsHtml += `<option value="${s.id}">&nbsp;&nbsp;&nbsp;└ ${escapeHtml(s.name)}</option>`;
+        });
+      });
+      selectEl.innerHTML = optionsHtml;
+      if (defaultListId && appData.lists.some(l => l.id === defaultListId)) {
+        selectEl.value = defaultListId;
+      }
     }
 
     function openWordDetail(wordId) {
@@ -1108,6 +1418,26 @@
       document.getElementById('detail-meaning').textContent = w.meaning;
       document.getElementById('detail-example-en').textContent = w.exampleEn || '尚未設定英文例句';
       document.getElementById('detail-example-zh').textContent = w.exampleZh || '';
+
+      // 熟練度狀態列
+      const famBar = document.getElementById('detail-familiarity-bar');
+      const toggleBtn = document.getElementById('btn-toggle-word-unfamiliar');
+      const wrongCount = w.wrongCount || 0;
+      const correctCount = w.correctCount || 0;
+
+      if (wrongCount > 0) {
+        famBar.innerHTML = `
+          <span class="px-2 py-0.5 rounded-md bg-rose-100 text-rose-700 font-bold"><i class="fa-solid fa-fire"></i> 不熟單（累計答錯 ${wrongCount} 次 / 答對 ${correctCount} 次）</span>
+        `;
+        toggleBtn.textContent = '標記為已熟練（歸零）';
+        toggleBtn.className = 'px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-semibold transition-colors';
+      } else {
+        famBar.innerHTML = `
+          <span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-semibold"><i class="fa-solid fa-check"></i> 熟練狀態正常（答對 ${correctCount} 次）</span>
+        `;
+        toggleBtn.textContent = '手動標記為不熟';
+        toggleBtn.className = 'px-3.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-xl text-xs font-semibold transition-colors';
+      }
 
       const collEl = document.getElementById('detail-collocations');
       collEl.innerHTML = (w.collocations && w.collocations.length > 0)
@@ -1125,6 +1455,22 @@
         : `<span class="text-xs text-slate-400">無衍生字紀錄</span>`;
 
       openModal('modal-word-detail');
+    }
+
+    function toggleCurrentWordUnfamiliar() {
+      const w = appData.words.find(item => item.id === currentDetailWordId);
+      if (!w) return;
+      if ((w.wrongCount || 0) > 0) {
+        w.wrongCount = 0;
+        showToast(`已將「${w.word}」標記為已熟練`, 'success');
+      } else {
+        w.wrongCount = 1;
+        showToast(`已將「${w.word}」加入不熟單清單`, 'info');
+      }
+      saveAppData();
+      renderAllListsUI();
+      renderWordCards();
+      openWordDetail(w.id);
     }
 
     function deleteCurrentDetailWord() {
@@ -1147,22 +1493,26 @@
       openWordFormModal(w);
     }
 
+    function getDefaultTargetListId() {
+      if (activeSubListId !== 'ALL_SUB') return activeSubListId;
+      if (activeMainListId !== 'ALL') return activeMainListId;
+      return appData.lists[0]?.id || 'list-default';
+    }
+
     function openWordFormModal(editWordObj = null) {
       if (appData.lists.length === 0) {
-        appData.lists.push({ id: 'list-default', name: '預設單字本' });
+        appData.lists.push({ id: 'list-default', name: '預設單字本', parentId: null });
         saveAppData();
         renderAllListsUI();
       }
 
       const selectEl = document.getElementById('form-list-select');
-      selectEl.innerHTML = appData.lists.map(l =>
-        `<option value="${l.id}">${escapeHtml(l.name)}</option>`
-      ).join('');
+      const targetListId = editWordObj ? editWordObj.listId : getDefaultTargetListId();
+      populateHierarchicalListSelect(selectEl, targetListId);
 
       if (editWordObj) {
         document.getElementById('word-form-title').textContent = '編輯單字';
         document.getElementById('form-word-id').value = editWordObj.id;
-        selectEl.value = editWordObj.listId;
         document.getElementById('form-word-input').value = editWordObj.word;
         document.getElementById('form-pos-input').value = editWordObj.pos || '';
         document.getElementById('form-meaning-input').value = editWordObj.meaning || '';
@@ -1174,7 +1524,6 @@
       } else {
         document.getElementById('word-form-title').textContent = '新增單字';
         document.getElementById('form-word-id').value = '';
-        selectEl.value = currentListId !== 'ALL' ? currentListId : appData.lists[0].id;
         document.getElementById('form-word-input').value = '';
         document.getElementById('form-pos-input').value = '';
         document.getElementById('form-meaning-input').value = '';
@@ -1212,7 +1561,11 @@
       if (id) {
         const idx = appData.words.findIndex(w => w.id === id);
         if (idx !== -1) {
-          appData.words[idx] = { id, listId, word, pos, meaning, exampleEn, exampleZh, collocations, phrases, derivatives };
+          const old = appData.words[idx];
+          appData.words[idx] = {
+            ...old,
+            listId, word, pos, meaning, exampleEn, exampleZh, collocations, phrases, derivatives
+          };
           showToast(`已更新單字「${word}」`, 'success');
         }
       } else {
@@ -1226,7 +1579,9 @@
           exampleZh,
           collocations,
           phrases,
-          derivatives
+          derivatives,
+          wrongCount: 0,
+          correctCount: 0
         });
         showToast(`已新增單字「${word}」`, 'success');
       }
@@ -1238,7 +1593,7 @@
     }
 
     // ==========================================
-    // Gemini API 核心呼叫（含 12 秒強制逾時保護）
+    // Gemini API 核心呼叫（預設 gemini-3.1-flash-lite-preview + 12 秒逾時保護）
     // ==========================================
     async function callGeminiJSON(promptText, timeoutMs = 12000) {
       const apiKey = getApiKey();
@@ -1282,13 +1637,12 @@
       } catch (err) {
         clearTimeout(timer);
         if (err.name === 'AbortError') {
-          throw new Error('連線逾時（超過 12 秒），請檢查網路或至設定切換為 gemini-3.1-flash-lite-preview');
+          throw new Error('連線逾時（超過 12 秒），請檢查網路或重新點擊生成');
         }
         throw err;
       }
     }
 
-    // 單字 AI 自動補全
     async function autoGenerateWordDetails() {
       const word = document.getElementById('form-word-input').value.trim();
       if (!word) {
@@ -1306,7 +1660,7 @@
       btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 生成中...`;
 
       try {
-        const prompt = `針對英文單字 "${word}"，回傳繁體中文學習資料的 JSON 物件（精簡扼要，加快速度）：
+        const prompt = `針對英文單字 "${word}"，回傳繁體中文學習資料的 JSON 物件（精簡扼要）：
 {
   "pos": "詞性縮寫如 v. / n. / adj.",
   "meaning": "繁體中文解釋",
@@ -1336,7 +1690,6 @@
       }
     }
 
-    // 批次 AI 生成多個單字
     function openBatchModal() {
       if (!getApiKey()) {
         showToast('請先至「設定與備份」填入 Gemini API Key 才能使用批次生成', 'warning');
@@ -1344,15 +1697,12 @@
         return;
       }
       if (appData.lists.length === 0) {
-        appData.lists.push({ id: 'list-default', name: '預設單字本' });
+        appData.lists.push({ id: 'list-default', name: '預設單字本', parentId: null });
         saveAppData();
         renderAllListsUI();
       }
       const selectEl = document.getElementById('batch-list-select');
-      selectEl.innerHTML = appData.lists.map(l =>
-        `<option value="${l.id}">${escapeHtml(l.name)}</option>`
-      ).join('');
-      selectEl.value = currentListId !== 'ALL' ? currentListId : appData.lists[0].id;
+      populateHierarchicalListSelect(selectEl, getDefaultTargetListId());
       document.getElementById('batch-words-input').value = '';
       document.getElementById('batch-progress-box').classList.add('hidden');
       openModal('modal-batch-words');
@@ -1376,7 +1726,7 @@
 
       btn.disabled = true;
       progressBox.classList.remove('hidden');
-      progressText.textContent = `正在一次打包生成 ${words.length} 個單字詳情，請稍候約 3～6 秒...`;
+      progressText.textContent = `正在一次打包生成 ${words.length} 個單字詳情，請稍候約 2～5 秒...`;
 
       try {
         const prompt = `請針對以下英文單字清單：${JSON.stringify(words)}，為每個單字提供精簡實用的繁體中文學習資料，並嚴格回傳 JSON 陣列（Array of Objects）：
@@ -1410,7 +1760,9 @@
             exampleZh: item.exampleZh || '',
             collocations: Array.isArray(item.collocations) ? item.collocations : [],
             phrases: Array.isArray(item.phrases) ? item.phrases : [],
-            derivatives: Array.isArray(item.derivatives) ? item.derivatives : []
+            derivatives: Array.isArray(item.derivatives) ? item.derivatives : [],
+            wrongCount: 0,
+            correctCount: 0
           });
           added++;
         });
@@ -1429,7 +1781,7 @@
     }
 
     // ==========================================
-    // 測驗設定與測驗引擎
+    // 測驗設定（階層多選 + 優先不熟單引擎）
     // ==========================================
     function initQuizSetupUI() {
       const container = document.getElementById('quiz-lists-selector');
@@ -1440,31 +1792,69 @@
         appData.lists.some(l => l.id === id)
       );
 
-      container.innerHTML = appData.lists.map(list => {
-        const count = appData.words.filter(w => w.listId === list.id).length;
-        const isChecked = quizConfig.selectedListIds.includes(list.id);
+      const mainLists = appData.lists.filter(l => !l.parentId);
+      container.innerHTML = mainLists.map(main => {
+        const subs = appData.lists.filter(s => s.parentId === main.id);
+        const mainDirectCount = appData.words.filter(w => w.listId === main.id).length;
+        const isMainChecked = quizConfig.selectedListIds.includes(main.id);
+
+        const subsHtml = subs.length > 0
+          ? `<div class="mt-2 pt-2 border-t border-slate-100 pl-5 grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+              ${subs.map(sub => {
+                const subCount = appData.words.filter(w => w.listId === sub.id).length;
+                const isSubChecked = quizConfig.selectedListIds.includes(sub.id);
+                return `
+                  <label class="cursor-pointer flex items-center justify-between px-2.5 py-1.5 rounded-lg border text-xs transition-all ${
+                    isSubChecked ? 'border-indigo-400 bg-indigo-50/60 text-indigo-950 font-semibold' : 'border-slate-200 bg-slate-50/50 text-slate-600'
+                  }">
+                    <div class="flex items-center gap-2 truncate">
+                      <input type="checkbox" value="${sub.id}" ${isSubChecked ? 'checked' : ''} onchange="onQuizSubListCheckboxChange(this)" class="w-3.5 h-3.5 accent-indigo-600 rounded">
+                      <span class="truncate">└ ${escapeHtml(sub.name)}</span>
+                    </div>
+                    <span class="text-[10px] text-slate-500 shrink-0">${subCount}字</span>
+                  </label>
+                `;
+              }).join('')}
+            </div>`
+          : '';
+
         return `
-          <label class="cursor-pointer flex items-center justify-between p-3 rounded-xl border transition-all ${
-            isChecked ? 'border-brand-600 bg-brand-50/50 text-slate-900' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
-          }">
-            <div class="flex items-center gap-2.5 truncate">
-              <input type="checkbox" value="${list.id}" ${isChecked ? 'checked' : ''} onchange="onQuizListCheckboxChange(this)" class="w-4 h-4 accent-brand-600 rounded">
-              <span class="text-xs font-bold truncate">${escapeHtml(list.name)}</span>
-            </div>
-            <span class="text-[11px] font-semibold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full shrink-0">${count} 字</span>
-          </label>
+          <div class="p-3 rounded-xl border transition-all ${isMainChecked ? 'border-brand-500 bg-brand-50/20' : 'border-slate-200 bg-white'}">
+            <label class="cursor-pointer flex items-center justify-between">
+              <div class="flex items-center gap-2.5 truncate">
+                <input type="checkbox" value="${main.id}" ${isMainChecked ? 'checked' : ''} onchange="onQuizMainListCheckboxChange(this)" class="w-4 h-4 accent-brand-600 rounded">
+                <span class="text-xs font-bold text-slate-800 truncate"><i class="fa-regular fa-folder text-brand-500 mr-1"></i>${escapeHtml(main.name)}</span>
+              </div>
+              <span class="text-[11px] font-semibold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full shrink-0">${mainDirectCount} 字${subs.length > 0 ? ` + ${subs.length}子清單` : ''}</span>
+            </label>
+            ${subsHtml}
+          </div>
         `;
       }).join('');
 
       updateSelectedQuizWordsCount();
     }
 
-    function onQuizListCheckboxChange(checkbox) {
-      const id = checkbox.value;
+    // 勾選/取消主清單時，一併勾選/取消底下所有子清單
+    function onQuizMainListCheckboxChange(checkbox) {
+      const mainId = checkbox.value;
+      const familyIds = getMainListFamilyIds(mainId);
       if (checkbox.checked) {
-        if (!quizConfig.selectedListIds.includes(id)) quizConfig.selectedListIds.push(id);
+        familyIds.forEach(id => {
+          if (!quizConfig.selectedListIds.includes(id)) quizConfig.selectedListIds.push(id);
+        });
       } else {
-        quizConfig.selectedListIds = quizConfig.selectedListIds.filter(item => item !== id);
+        quizConfig.selectedListIds = quizConfig.selectedListIds.filter(id => !familyIds.includes(id));
+      }
+      initQuizSetupUI();
+    }
+
+    function onQuizSubListCheckboxChange(checkbox) {
+      const subId = checkbox.value;
+      if (checkbox.checked) {
+        if (!quizConfig.selectedListIds.includes(subId)) quizConfig.selectedListIds.push(subId);
+      } else {
+        quizConfig.selectedListIds = quizConfig.selectedListIds.filter(id => id !== subId);
       }
       initQuizSetupUI();
     }
@@ -1484,13 +1874,32 @@
 
     function updateSelectedQuizWordsCount() {
       const words = getAvailableQuizWords();
-      document.getElementById('quiz-selected-total-words').textContent = `${words.length} 題可用`;
+      const unfamWords = words.filter(isWordUnfamiliar);
+      document.getElementById('quiz-selected-total-words').textContent = `${words.length} 字`;
+      document.getElementById('quiz-selected-unfamiliar-words').textContent = `${unfamWords.length} 字`;
+
       const btnToggle = document.getElementById('btn-toggle-all-lists');
       btnToggle.textContent = quizConfig.selectedListIds.length === appData.lists.length ? '取消全選' : '全選所有清單';
 
       if (quizConfig.isAllCount) {
-        document.getElementById('quiz-count-input').value = words.length || 1;
+        const targetPoolSize = quizConfig.priority === 'unfamiliar_only' ? unfamWords.length : words.length;
+        document.getElementById('quiz-count-input').value = targetPoolSize || 1;
       }
+    }
+
+    function updateQuizPriorityUI() {
+      const selected = document.querySelector('input[name="quizPriority"]:checked').value;
+      quizConfig.priority = selected;
+
+      ['smart', 'unfamiliar_only', 'random'].forEach(p => {
+        const card = document.getElementById(`priority-card-${p}`);
+        if (p === selected) {
+          card.className = 'cursor-pointer flex items-start gap-2.5 p-3 rounded-xl border-2 transition-all border-brand-600 bg-brand-50/40';
+        } else {
+          card.className = 'cursor-pointer flex items-start gap-2.5 p-3 rounded-xl border-2 transition-all border-slate-200 hover:border-slate-300';
+        }
+      });
+      updateSelectedQuizWordsCount();
     }
 
     function updateQuizModeUI() {
@@ -1520,8 +1929,7 @@
       const input = document.getElementById('quiz-count-input');
       if (val === 'all') {
         quizConfig.isAllCount = true;
-        const total = getAvailableQuizWords().length;
-        input.value = total > 0 ? total : 1;
+        updateSelectedQuizWordsCount();
       } else {
         quizConfig.isAllCount = false;
         input.value = val;
@@ -1535,11 +1943,49 @@
       });
     }
 
+    // 依照出題策略（優先不熟單 / 僅不熟單 / 隨機）選題
+    function selectWordsByPriority(pool, count) {
+      if (quizConfig.priority === 'random') {
+        return [...pool].sort(() => Math.random() - 0.5).slice(0, count);
+      }
+
+      if (quizConfig.priority === 'unfamiliar_only') {
+        const unfam = pool.filter(isWordUnfamiliar);
+        return [...unfam]
+          .sort((a, b) => (b.wrongCount - a.wrongCount) || (Math.random() - 0.5))
+          .slice(0, count);
+      }
+
+      // smart（智能優先不熟單）：
+      // 1. 答錯次數 > 0（依錯次數多到少排，同次數隨機）
+      // 2. 從未測驗過（wrongCount === 0 && correctCount === 0）
+      // 3. 已答對過且無錯誤的熟練單字
+      const groupWrong = pool.filter(w => (w.wrongCount || 0) > 0)
+        .sort((a, b) => (b.wrongCount - a.wrongCount) || (Math.random() - 0.5));
+      const groupNew = pool.filter(w => (w.wrongCount || 0) === 0 && (w.correctCount || 0) === 0)
+        .sort(() => Math.random() - 0.5);
+      const groupMastered = pool.filter(w => (w.wrongCount || 0) === 0 && (w.correctCount || 0) > 0)
+        .sort((a, b) => (a.correctCount - b.correctCount) || (Math.random() - 0.5));
+
+      const ordered = [...groupWrong, ...groupNew, ...groupMastered].slice(0, count);
+      // 抽取完畢後稍微洗牌，避免答題時完全固定順序，同時確保前段都是不熟單
+      return ordered.sort(() => Math.random() - 0.5);
+    }
+
     function startQuiz(customWordPool = null) {
-      const pool = customWordPool || getAvailableQuizWords();
+      let pool = customWordPool || getAvailableQuizWords();
       if (pool.length === 0) {
         showToast('請至少勾選一個包含單字的測驗範圍！', 'warning');
         return;
+      }
+
+      if (!customWordPool && quizConfig.priority === 'unfamiliar_only') {
+        const unfamPool = pool.filter(isWordUnfamiliar);
+        if (unfamPool.length === 0) {
+          showToast('選定範圍內目前沒有「答錯紀錄」的不熟單字！請改選「優先不熟單」模式。', 'warning');
+          return;
+        }
+        pool = unfamPool;
       }
 
       let requestedCount = parseInt(document.getElementById('quiz-count-input').value, 10);
@@ -1555,10 +2001,12 @@
       }
 
       const finalCount = Math.min(requestedCount, pool.length);
-      const shuffled = [...pool].sort(() => Math.random() - 0.5).slice(0, finalCount);
+      const selectedQuestions = customWordPool
+        ? [...pool].sort(() => Math.random() - 0.5).slice(0, finalCount)
+        : selectWordsByPriority(pool, finalCount);
 
       activeQuiz = {
-        questions: shuffled.map(w => ({ wordObj: w, generatedSentence: null, sentenceZh: null, options: [] })),
+        questions: selectedQuestions.map(w => ({ wordObj: w, generatedSentence: null, sentenceZh: null, options: [] })),
         currentIndex: 0,
         score: 0,
         results: [],
@@ -1586,6 +2034,14 @@
 
       document.getElementById('quiz-feedback-area').classList.add('hidden');
       document.getElementById('quiz-tts-btn').classList.add('hidden');
+
+      const statusBadge = document.getElementById('quiz-word-status-badge');
+      if ((targetWord.wrongCount || 0) > 0) {
+        statusBadge.innerHTML = `<i class="fa-solid fa-fire"></i> 不熟單（曾錯 ${targetWord.wrongCount} 次）`;
+        statusBadge.classList.remove('hidden');
+      } else {
+        statusBadge.classList.add('hidden');
+      }
 
       const promptContainer = document.getElementById('quiz-prompt-container');
       const answerArea = document.getElementById('quiz-answer-area');
@@ -1778,8 +2234,24 @@
 
     function recordAndShowFeedback(isCorrect, userAnswer, qItem) {
       const w = qItem.wordObj;
+
+      // 更新該單字在資料庫中的熟練度與錯題統計
+      const storedWord = appData.words.find(item => item.id === w.id);
+      if (storedWord) {
+        if (isCorrect) {
+          storedWord.correctCount = (storedWord.correctCount || 0) + 1;
+          // 若連續答對多次，可逐步降低錯誤權重（最低為 0）
+          if ((storedWord.wrongCount || 0) > 0) {
+            storedWord.wrongCount = Math.max(0, storedWord.wrongCount - 1);
+          }
+        } else {
+          storedWord.wrongCount = (storedWord.wrongCount || 0) + 1;
+        }
+        saveAppData();
+      }
+
       activeQuiz.results.push({
-        wordObj: w,
+        wordObj: storedWord || w,
         isCorrect,
         userAnswer,
         sentenceEn: qItem.generatedSentence || w.exampleEn
@@ -1803,8 +2275,8 @@
         banner.innerHTML = `
           <i class="fa-solid fa-circle-xmark text-rose-600 text-lg mt-0.5"></i>
           <div class="space-y-1">
-            <div class="font-bold">答錯了！正確單字：<span class="underline">${escapeHtml(w.word)}</span> (${escapeHtml(w.pos || '')})</div>
-            <div class="text-xs text-rose-800">中文解釋：${escapeHtml(w.meaning)}</div>
+            <div class="font-bold">答錯了！已自動提高「不熟單」優先度</div>
+            <div class="text-xs text-rose-900">正確單字：<strong class="underline">${escapeHtml(w.word)}</strong> (${escapeHtml(w.pos || '')}) — ${escapeHtml(w.meaning)}</div>
             <div class="text-xs text-rose-700">您的作答：${escapeHtml(userAnswer)}</div>
           </div>
         `;
@@ -1836,7 +2308,7 @@
     }
 
     function abortQuiz() {
-      showCustomConfirm('結束測驗', '確定要提前結束目前的測驗嗎？進度將不會保存。', () => {
+      showCustomConfirm('結束測驗', '確定要提前結束目前的測驗嗎？已作答題目的熟練度紀錄會保留。', () => {
         resetQuizToSetup();
       });
     }
@@ -1875,10 +2347,11 @@
         return `
           <div class="p-3.5 rounded-xl border ${res.isCorrect ? 'border-slate-200 bg-slate-50/50' : 'border-rose-200 bg-rose-50/40'} flex items-start justify-between gap-3">
             <div class="space-y-1">
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 flex-wrap">
                 <i class="fa-solid ${res.isCorrect ? 'fa-circle-check text-emerald-500' : 'fa-circle-xmark text-rose-500'}"></i>
                 <span class="font-bold text-slate-900">${escapeHtml(w.word)}</span>
                 <span class="text-xs text-slate-500">${escapeHtml(w.pos || '')}</span>
+                ${(w.wrongCount || 0) > 0 ? `<span class="text-[10px] font-bold bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded">累計錯 ${w.wrongCount} 次</span>` : ''}
                 <button onclick="speakText('${escapeHtml(w.word)}')" class="text-slate-400 hover:text-brand-600 text-xs"><i class="fa-solid fa-volume-high"></i></button>
               </div>
               <p class="text-xs text-slate-700">${escapeHtml(w.meaning)}</p>
@@ -1902,7 +2375,7 @@
     // ==========================================
     function loadApiKeyUI() {
       const key = getApiKey();
-      const savedModel = localStorage.getItem(STORAGE_KEYS.MODEL) || 'gemini-flash-latest';
+      const savedModel = localStorage.getItem(STORAGE_KEYS.MODEL) || 'gemini-3.1-flash-lite-preview';
       document.getElementById('gemini-api-key-input').value = key;
       const selectEl = document.getElementById('gemini-model-select');
       const customInput = document.getElementById('gemini-custom-model-input');
@@ -1910,7 +2383,7 @@
       if ([...selectEl.options].some(o => o.value === savedModel)) {
         selectEl.value = savedModel;
       } else {
-        selectEl.value = 'gemini-flash-latest';
+        selectEl.value = 'gemini-3.1-flash-lite-preview';
       }
 
       if (savedModel === 'custom') {
@@ -2010,7 +2483,7 @@
       resultBox.classList.add('hidden');
 
       try {
-        const res = await callGeminiJSON('請回傳 {"status": "ok"}', 10000);
+        await callGeminiJSON('請回傳 {"status": "ok"}', 10000);
         resultBox.className = 'p-3 rounded-xl text-xs leading-relaxed bg-emerald-50 border border-emerald-200 text-emerald-800';
         resultBox.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i> <strong>連線成功！</strong>目前使用模型：<code>${escapeHtml(getSelectedModel())}</code>，所有 AI 生成功能皆可正常使用。`;
         resultBox.classList.remove('hidden');
@@ -2029,7 +2502,7 @@
     function exportDataToJson() {
       const exportPayload = {
         app: 'VocabMaster AI',
-        version: 1,
+        version: 2,
         exportedAt: new Date().toISOString(),
         lists: appData.lists,
         words: appData.words
@@ -2060,7 +2533,7 @@
           }
           pendingImportData = parsed;
           document.getElementById('import-preview-text').textContent =
-            `偵測到備份檔案內含 ${parsed.lists.length} 個單字清單、共 ${parsed.words.length} 個單字。請選擇匯入方式：`;
+            `偵測到備份檔案內含 ${parsed.lists.length} 個清單（含子清單）、共 ${parsed.words.length} 個單字。請選擇匯入方式：`;
           openModal('modal-import-confirm');
         } catch (err) {
           showToast(`無法解析 JSON 檔案：${err.message}`, 'error');
@@ -2076,21 +2549,42 @@
 
       if (mode === 'overwrite') {
         appData = {
-          lists: pendingImportData.lists,
-          words: pendingImportData.words
+          lists: pendingImportData.lists.map(l => ({ ...l, parentId: l.parentId || null })),
+          words: pendingImportData.words.map(w => ({
+            ...w,
+            wrongCount: typeof w.wrongCount === 'number' ? w.wrongCount : 0,
+            correctCount: typeof w.correctCount === 'number' ? w.correctCount : 0
+          }))
         };
-        currentListId = 'ALL';
+        activeMainListId = 'ALL';
+        activeSubListId = 'ALL_SUB';
         showToast('已完全覆蓋並匯入單字庫資料！', 'success');
       } else {
+        // 合併模式：先處理主清單，再處理子清單
         const listIdMap = {};
-        pendingImportData.lists.forEach(impList => {
-          const existing = appData.lists.find(l => l.name === impList.name);
+        const impMainLists = pendingImportData.lists.filter(l => !l.parentId);
+        const impSubLists = pendingImportData.lists.filter(l => l.parentId);
+
+        impMainLists.forEach(impMain => {
+          const existing = appData.lists.find(l => !l.parentId && l.name === impMain.name);
           if (existing) {
-            listIdMap[impList.id] = existing.id;
+            listIdMap[impMain.id] = existing.id;
           } else {
             const newId = 'list-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
-            appData.lists.push({ id: newId, name: impList.name });
-            listIdMap[impList.id] = newId;
+            appData.lists.push({ id: newId, name: impMain.name, parentId: null });
+            listIdMap[impMain.id] = newId;
+          }
+        });
+
+        impSubLists.forEach(impSub => {
+          const mappedParentId = listIdMap[impSub.parentId] || null;
+          const existing = appData.lists.find(l => l.parentId === mappedParentId && l.name === impSub.name);
+          if (existing) {
+            listIdMap[impSub.id] = existing.id;
+          } else {
+            const newId = 'list-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+            appData.lists.push({ id: newId, name: impSub.name, parentId: mappedParentId });
+            listIdMap[impSub.id] = newId;
           }
         });
 
@@ -2104,7 +2598,9 @@
             appData.words.push({
               ...impWord,
               id: 'w-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
-              listId: targetListId
+              listId: targetListId,
+              wrongCount: typeof impWord.wrongCount === 'number' ? impWord.wrongCount : 0,
+              correctCount: typeof impWord.correctCount === 'number' ? impWord.correctCount : 0
             });
             addedCount++;
           }
@@ -2119,10 +2615,27 @@
       closeModal('modal-import-confirm');
     }
 
+    function resetAllUnfamiliarStats() {
+      showCustomConfirm(
+        '重置所有不熟紀錄',
+        '確定要將全部單字的答錯與答對次數歸零嗎？單字本身不會被刪除。',
+        () => {
+          appData.words.forEach(w => {
+            w.wrongCount = 0;
+            w.correctCount = 0;
+          });
+          saveAppData();
+          renderAllListsUI();
+          renderWordCards();
+          showToast('已重置所有單字的熟練度統計', 'info');
+        }
+      );
+    }
+
     function restoreDefaultSampleData() {
       showCustomConfirm(
         '還原預設範例清單',
-        '這將會把系統內建的「多益核心必考」與「高頻日常與職場」範例清單重新加入您的單字庫中，確定繼續嗎？',
+        '這將會把系統內建的主清單與子清單範例重新加入您的單字庫中，確定繼續嗎？',
         () => {
           const sample = JSON.parse(JSON.stringify(DEFAULT_SAMPLE_DATA));
           sample.lists.forEach(sList => {
