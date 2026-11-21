@@ -33,7 +33,6 @@
     }
   </script>
   <style>
-    /* 自訂捲軸與行動端觸控優化 */
     body {
       -webkit-tap-highlight-color: transparent;
       background-color: #f8fafc;
@@ -56,7 +55,7 @@
 </head>
 <body class="text-slate-800 antialiased min-h-screen flex flex-col pb-20 md:pb-0">
 
-  <!-- 頂部導覽列 (桌面與手機共用標題列) -->
+  <!-- 頂部導覽列 -->
   <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
     <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
       <div class="flex items-center gap-2.5">
@@ -108,9 +107,7 @@
         </div>
 
         <!-- 清單膠囊橫向捲動列 -->
-        <div id="list-pills-container" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-          <!-- 動態產生清單標籤 -->
-        </div>
+        <div id="list-pills-container" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1"></div>
 
         <!-- 當前清單操作列 -->
         <div class="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
@@ -119,10 +116,10 @@
             <span id="current-list-count" class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium">0 個單字</span>
           </div>
           <div id="current-list-actions" class="flex items-center gap-2">
-            <button onclick="openListModal('rename')" class="p-1.5 text-slate-500 hover:text-brand-600 hover:bg-slate-100 rounded-lg transition-colors" title="重新命名清單">
+            <button onclick="openListModal('rename')" class="p-1.5 text-slate-500 hover:text-brand-600 hover:bg-slate-100 rounded-lg transition-colors">
               <i class="fa-solid fa-pen"></i> 重新命名
             </button>
-            <button onclick="confirmDeleteList()" class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" title="刪除清單">
+            <button onclick="confirmDeleteList()" class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors">
               <i class="fa-solid fa-trash-can"></i> 刪除清單
             </button>
           </div>
@@ -130,20 +127,23 @@
       </div>
 
       <!-- 搜尋與新增單字操作區 -->
-      <div class="flex flex-col sm:flex-row gap-3">
+      <div class="flex flex-col sm:flex-row gap-2.5">
         <div class="relative flex-1">
           <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
           <input type="text" id="word-search-input" oninput="renderWordCards()" placeholder="搜尋清單內的英文單字或中文解釋..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition-all" />
         </div>
-        <button onclick="openWordFormModal()" class="bg-brand-600 hover:bg-brand-700 active:scale-[0.99] text-white font-semibold px-5 py-2.5 rounded-xl shadow-sm shadow-brand-600/20 transition-all flex items-center justify-center gap-2 text-sm shrink-0">
-          <i class="fa-solid fa-plus"></i> 新增單字 (支援 AI 生成)
-        </button>
+        <div class="flex gap-2 shrink-0">
+          <button onclick="openBatchModal()" class="flex-1 sm:flex-none bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-semibold px-4 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-sm">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> 批次 AI 建字
+          </button>
+          <button onclick="openWordFormModal()" class="flex-1 sm:flex-none bg-brand-600 hover:bg-brand-700 active:scale-[0.99] text-white font-semibold px-4 py-2.5 rounded-xl shadow-sm shadow-brand-600/20 transition-all flex items-center justify-center gap-1.5 text-sm">
+            <i class="fa-solid fa-plus"></i> 新增單字
+          </button>
+        </div>
       </div>
 
       <!-- 單字卡片列表 -->
-      <div id="word-cards-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-        <!-- 動態產生單字卡片 -->
-      </div>
+      <div id="word-cards-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5"></div>
     </section>
 
     <!-- ==================== 分頁 2：測驗中心 ==================== -->
@@ -167,9 +167,7 @@
                 全選所有清單
               </button>
             </div>
-            <div id="quiz-lists-selector" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <!-- 動態產生多選範圍方塊 -->
-            </div>
+            <div id="quiz-lists-selector" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
             <div class="text-xs text-slate-500 flex items-center justify-between bg-slate-50 px-3 py-2 rounded-xl border border-slate-100">
               <span>目前選定範圍總單字數：</span>
               <span id="quiz-selected-total-words" class="font-bold text-brand-600 text-sm">0 題可用</span>
@@ -180,7 +178,6 @@
           <div class="space-y-2.5">
             <label class="text-sm font-bold text-slate-700 block">2. 選擇測驗模式</label>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <!-- 模式 A -->
               <label class="cursor-pointer relative flex items-start gap-3 p-3.5 rounded-xl border-2 transition-all border-brand-600 bg-brand-50/40" id="mode-card-cloze">
                 <input type="radio" name="quizMode" value="cloze" checked onchange="updateQuizModeUI()" class="mt-1 accent-brand-600">
                 <div>
@@ -192,7 +189,6 @@
                 </div>
               </label>
 
-              <!-- 模式 B -->
               <label class="cursor-pointer relative flex items-start gap-3 p-3.5 rounded-xl border-2 transition-all border-slate-200 hover:border-slate-300" id="mode-card-spelling">
                 <input type="radio" name="quizMode" value="spelling" onchange="updateQuizModeUI()" class="mt-1 accent-brand-600">
                 <div>
@@ -210,10 +206,10 @@
           <div class="space-y-2.5">
             <label class="text-sm font-bold text-slate-700 block">3. 設定測驗題數</label>
             <div class="flex flex-wrap items-center gap-2">
-              <button type="button" onclick="setQuizCount(5)" class="count-preset-btn px-3.5 py-2 rounded-xl text-xs font-semibold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-all">5 題</button>
-              <button type="button" onclick="setQuizCount(10)" class="count-preset-btn px-3.5 py-2 rounded-xl text-xs font-semibold border border-brand-600 bg-brand-50 text-brand-700 transition-all">10 題</button>
-              <button type="button" onclick="setQuizCount(15)" class="count-preset-btn px-3.5 py-2 rounded-xl text-xs font-semibold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-all">15 題</button>
-              <button type="button" onclick="setQuizCount('all')" class="count-preset-btn px-3.5 py-2 rounded-xl text-xs font-semibold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-all">範圍內全部</button>
+              <button type="button" onclick="setQuizCount(5, this)" class="count-preset-btn px-3.5 py-2 rounded-xl text-xs font-semibold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-all">5 題</button>
+              <button type="button" onclick="setQuizCount(10, this)" class="count-preset-btn px-3.5 py-2 rounded-xl text-xs font-semibold border border-brand-600 bg-brand-50 text-brand-700 transition-all">10 題</button>
+              <button type="button" onclick="setQuizCount(15, this)" class="count-preset-btn px-3.5 py-2 rounded-xl text-xs font-semibold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-all">15 題</button>
+              <button type="button" onclick="setQuizCount('all', this)" class="count-preset-btn px-3.5 py-2 rounded-xl text-xs font-semibold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-all">範圍內全部</button>
               
               <div class="flex items-center gap-1.5 ml-auto">
                 <span class="text-xs text-slate-500">自訂：</span>
@@ -232,7 +228,6 @@
 
       <!-- 步驟 2：測驗進行中畫面 -->
       <div id="quiz-active-view" class="hidden space-y-4">
-        <!-- 頂部進度條與離開按鈕 -->
         <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 space-y-3">
           <div class="flex items-center justify-between text-xs font-semibold">
             <button onclick="abortQuiz()" class="text-slate-500 hover:text-rose-600 flex items-center gap-1 transition-colors">
@@ -246,12 +241,10 @@
           </div>
         </div>
 
-        <!-- 題目卡片 -->
         <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-200/80 space-y-5 relative min-h-[280px] flex flex-col justify-between">
-          <!-- AI 生成題目載入遮罩 -->
           <div id="quiz-question-loading" class="hidden absolute inset-0 bg-white/95 backdrop-blur-xs rounded-2xl z-10 flex flex-col items-center justify-center p-6 text-center">
             <div class="w-10 h-10 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin mb-3"></div>
-            <p class="font-bold text-slate-800 text-sm">AI 正在為您量身打造全新語境例句...</p>
+            <p class="font-bold text-slate-800 text-sm">AI 正在為您打造全新語境例句...</p>
             <p class="text-xs text-slate-500 mt-1">若網路較慢將自動切換為本機題庫</p>
           </div>
 
@@ -262,23 +255,13 @@
                 <i class="fa-solid fa-volume-high"></i> 朗讀解答
               </button>
             </div>
-
-            <!-- 題幹顯示區 -->
-            <div id="quiz-prompt-container" class="space-y-2">
-              <!-- 動態填入題目 -->
-            </div>
+            <div id="quiz-prompt-container" class="space-y-2"></div>
           </div>
 
-          <!-- 作答區：選擇題選項 OR 拼字輸入框 -->
-          <div id="quiz-answer-area" class="pt-2">
-            <!-- 動態填入選項或輸入框 -->
-          </div>
+          <div id="quiz-answer-area" class="pt-2"></div>
 
-          <!-- 答題回饋與下一題按鈕 -->
           <div id="quiz-feedback-area" class="hidden pt-4 border-t border-slate-100 space-y-3 animate-fade-in">
-            <div id="quiz-feedback-banner" class="p-3.5 rounded-xl text-sm flex items-start gap-3">
-              <!-- 回饋內容 -->
-            </div>
+            <div id="quiz-feedback-banner" class="p-3.5 rounded-xl text-sm flex items-start gap-3"></div>
             <button onclick="nextQuizQuestion()" id="btn-next-question" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 text-sm">
               <span>下一題</span> <i class="fa-solid fa-arrow-right"></i>
             </button>
@@ -322,14 +305,11 @@
           </div>
         </div>
 
-        <!-- 錯題與全題檢討清單 -->
         <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 space-y-3">
           <h4 class="font-bold text-sm text-slate-800 flex items-center gap-2">
             <i class="fa-solid fa-clipboard-check text-brand-600"></i> 作答詳解回顧
           </h4>
-          <div id="result-review-list" class="space-y-3">
-            <!-- 動態產生每題回顧 -->
-          </div>
+          <div id="result-review-list" class="space-y-3"></div>
         </div>
       </div>
     </section>
@@ -337,30 +317,42 @@
     <!-- ==================== 分頁 3：設定與備份 ==================== -->
     <section id="tab-settings" class="hidden animate-fade-in space-y-5">
       
-      <!-- Gemini API 金鑰設定卡片 -->
+      <!-- Gemini API 金鑰與模型設定卡片 -->
       <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 space-y-4">
-        <div class="flex items-start justify-between gap-3">
-          <div>
-            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-              <i class="fa-solid fa-key text-amber-500"></i> Gemini API 金鑰設定
-            </h2>
-            <p class="text-xs text-slate-500 mt-1 leading-relaxed">
-              設定您的 Google Gemini API Key，即可啟用「新增單字自動補全（字義、例句、搭配詞、片語、衍生字）」與「測驗時 AI 即時造句」功能。金鑰僅儲存於您的瀏覽器本機（localStorage），絕不會上傳至任何第三方伺服器。
-            </p>
-          </div>
+        <div>
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-key text-amber-500"></i> Gemini API 金鑰與模型設定
+          </h2>
+          <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+            設定您的 Google Gemini API Key，即可啟用「新增單字自動補全」與「測驗時 AI 即時造句」功能。資料僅儲存於您的瀏覽器本機（localStorage）。
+          </p>
         </div>
 
         <div class="space-y-3">
-          <div class="relative">
-            <input type="password" id="gemini-api-key-input" placeholder="請貼上您的 Gemini API Key (AIzaSy...)" class="w-full pl-4 pr-20 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500" />
-            <button type="button" onclick="toggleApiKeyVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500 hover:text-slate-800 px-2 py-1">
-              <i class="fa-regular fa-eye" id="api-eye-icon"></i>
-            </button>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Gemini API Key</label>
+            <div class="relative">
+              <input type="password" id="gemini-api-key-input" placeholder="請貼上您的 Gemini API Key (AIzaSy...)" class="w-full pl-4 pr-12 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500" />
+              <button type="button" onclick="toggleApiKeyVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500 hover:text-slate-800 px-2 py-1">
+                <i class="fa-regular fa-eye" id="api-eye-icon"></i>
+              </button>
+            </div>
           </div>
 
-          <div class="flex flex-wrap items-center gap-2.5">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">AI 模型選擇（若遇模型汰舊可隨時切換或自訂）</label>
+            <select id="gemini-model-select" onchange="onModelSelectChange()" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-brand-500">
+              <option value="gemini-flash-latest">gemini-flash-latest（官方自動指向最新可用版・推薦）</option>
+              <option value="gemini-3.1-flash-lite-preview">gemini-3.1-flash-lite-preview（極速輕量版）</option>
+              <option value="gemini-3-flash-preview">gemini-3-flash-preview（標準最新版）</option>
+              <option value="custom">自訂輸入其他模型代號...</option>
+            </select>
+            <input type="text" id="gemini-custom-model-input" placeholder="請貼上 Google AI Studio 顯示的模型代號" oninput="saveCustomModelInput()" class="hidden mt-2 w-full px-3.5 py-2 bg-white border border-brand-300 rounded-xl text-sm font-mono focus:outline-none focus:border-brand-500" />
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2.5 pt-1">
             <button onclick="saveApiKey()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5">
-              <i class="fa-solid fa-floppy-disk"></i> 儲存金鑰
+              <i class="fa-solid fa-floppy-disk"></i> 儲存設定
             </button>
             <button onclick="testGeminiConnection()" id="btn-test-api" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5">
               <i class="fa-solid fa-plug"></i> 測試 API 連線
@@ -369,9 +361,7 @@
               清除金鑰
             </button>
           </div>
-          <p class="text-[11px] text-slate-400">
-            提示：若未填寫金鑰，系統仍可完整離線使用手動建字、單字瀏覽與「本機例句填空 / 中翻英拼字測驗」。
-          </p>
+          <div id="api-test-result-box" class="hidden p-3 rounded-xl text-xs leading-relaxed"></div>
         </div>
       </div>
 
@@ -387,7 +377,6 @@
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-          <!-- 匯出區塊 -->
           <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between gap-3">
             <div>
               <div class="font-bold text-sm text-slate-800 flex items-center gap-1.5">
@@ -400,7 +389,6 @@
             </button>
           </div>
 
-          <!-- 匯入區塊 -->
           <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between gap-3">
             <div>
               <div class="font-bold text-sm text-slate-800 flex items-center gap-1.5">
@@ -415,7 +403,6 @@
           </div>
         </div>
 
-        <!-- 重置預設範例資料 -->
         <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
           <span class="text-xs text-slate-500">想重新體驗系統內建的精選單字範例？</span>
           <button onclick="restoreDefaultSampleData()" class="text-xs font-semibold text-slate-600 hover:text-brand-600 underline">
@@ -427,7 +414,7 @@
 
   </main>
 
-  <!-- 底部固定導覽列 (僅限手機版顯示) -->
+  <!-- 底部固定導覽列 (手機版) -->
   <nav class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200 flex items-center justify-around h-16 px-2 shadow-[0_-4px_12px_rgba(0,0,0,0.03)]">
     <button onclick="switchTab('lists')" id="nav-mobile-lists" class="flex-1 flex flex-col items-center justify-center gap-1 py-1 text-brand-600 font-semibold">
       <i class="fa-solid fa-layer-group text-lg"></i>
@@ -446,7 +433,6 @@
   <!-- ==================== 彈出視窗 1：單字詳情檢視卡片 ==================== -->
   <div id="modal-word-detail" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-2xl shadow-xl max-h-[90vh] flex flex-col overflow-hidden animate-fade-in">
-      <!-- 頂部標題與關閉 -->
       <div class="p-5 border-b border-slate-100 flex items-start justify-between gap-3 bg-gradient-to-r from-slate-50 to-indigo-50/40">
         <div>
           <div class="flex items-center gap-2.5 flex-wrap">
@@ -463,9 +449,7 @@
         </button>
       </div>
 
-      <!-- 捲動內容區 -->
       <div class="p-5 overflow-y-auto space-y-4 text-sm">
-        <!-- 例句區塊 -->
         <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/70 space-y-1.5">
           <div class="flex items-center justify-between">
             <span class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
@@ -479,7 +463,6 @@
           <p id="detail-example-zh" class="text-xs text-slate-600"></p>
         </div>
 
-        <!-- 常用搭配詞 (Collocations) -->
         <div class="space-y-1.5">
           <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
             <i class="fa-solid fa-link text-indigo-500"></i> 常用搭配詞 (Collocations)
@@ -487,7 +470,6 @@
           <div id="detail-collocations" class="flex flex-wrap gap-1.5"></div>
         </div>
 
-        <!-- 相關片語 (Phrases) -->
         <div class="space-y-1.5">
           <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
             <i class="fa-solid fa-comments text-emerald-500"></i> 常用片語與慣用語 (Phrases)
@@ -495,7 +477,6 @@
           <ul id="detail-phrases" class="space-y-1.5 text-xs text-slate-700"></ul>
         </div>
 
-        <!-- 衍生字 (Derivatives) -->
         <div class="space-y-1.5">
           <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
             <i class="fa-solid fa-code-branch text-amber-500"></i> 詞性變化與衍生字 (Derivatives)
@@ -504,7 +485,6 @@
         </div>
       </div>
 
-      <!-- 底部操作按鈕 -->
       <div class="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-3">
         <button onclick="deleteCurrentDetailWord()" class="px-4 py-2 text-rose-600 hover:bg-rose-100/70 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5">
           <i class="fa-solid fa-trash-can"></i> 刪除單字
@@ -529,13 +509,11 @@
       <form id="word-form" onsubmit="saveWordFromForm(event)" class="p-4 sm:p-5 overflow-y-auto space-y-4 text-sm">
         <input type="hidden" id="form-word-id" />
         
-        <!-- 所屬清單選擇 -->
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">儲存至單字清單</label>
           <select id="form-list-select" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-brand-500"></select>
         </div>
 
-        <!-- 英文單字與 AI 自動生成按鈕 -->
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">英文單字 <span class="text-rose-500">*</span></label>
           <div class="flex gap-2">
@@ -547,7 +525,6 @@
           <p class="text-[11px] text-slate-400 mt-1">輸入單字後點擊「AI 自動補全」，將自動填寫字義、例句、搭配詞、片語與衍生字。</p>
         </div>
 
-        <!-- 詞性與中文解釋 -->
         <div class="grid grid-cols-3 gap-2.5">
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">詞性</label>
@@ -559,7 +536,6 @@
           </div>
         </div>
 
-        <!-- 英文例句與中文翻譯 -->
         <div class="space-y-2">
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">英文例句（用於填空測驗）</label>
@@ -571,9 +547,8 @@
           </div>
         </div>
 
-        <!-- 搭配詞、片語、衍生字 -->
         <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">常用搭配詞 (Collocations，請用逗號或換行分隔)</label>
+          <label class="block text-xs font-bold text-slate-700 mb-1">常用搭配詞 (Collocations，用逗號或換行分隔)</label>
           <textarea id="form-collocations" rows="2" placeholder="accomplish a goal (達成目標), accomplish a task (完成任務)" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-brand-500"></textarea>
         </div>
 
@@ -583,7 +558,7 @@
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">衍生字 (Derivatives，請用逗號分隔)</label>
+          <label class="block text-xs font-bold text-slate-700 mb-1">衍生字 (Derivatives，用逗號分隔)</label>
           <input type="text" id="form-derivatives" placeholder="accomplishment (n. 成就), accomplished (adj. 有造詣的)" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-brand-500" />
         </div>
 
@@ -592,6 +567,44 @@
           <button type="submit" class="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold shadow-sm">儲存單字</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- ==================== 彈出視窗 2.5：批次 AI 生成多個單字 ==================== -->
+  <div id="modal-batch-words" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-2xl shadow-xl p-5 space-y-4 animate-fade-in">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-base text-slate-900 flex items-center gap-2">
+          <i class="fa-solid fa-wand-magic-sparkles text-brand-600"></i> 批次貼上單字一鍵生成
+        </h3>
+        <button onclick="closeModal('modal-batch-words')" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-sm">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">存入目標清單</label>
+          <select id="batch-list-select" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-brand-500"></select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">貼上多個英文單字（用換行或逗號分隔，建議一次 1～15 個）</label>
+          <textarea id="batch-words-input" rows="5" placeholder="例如：&#10;elaborate&#10;fluctuate&#10;perspective&#10;consensus" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-mono focus:outline-none focus:border-brand-500"></textarea>
+        </div>
+
+        <div id="batch-progress-box" class="hidden p-3 rounded-xl bg-brand-50 border border-brand-100 text-xs text-brand-800 flex items-center gap-2">
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          <span id="batch-progress-text">正在生成中...</span>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-1">
+          <button type="button" onclick="closeModal('modal-batch-words')" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">取消</button>
+          <button type="button" onclick="executeBatchAiGenerate()" id="btn-batch-run" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl text-xs shadow-sm flex items-center gap-1.5">
+            <i class="fa-solid fa-bolt"></i> 開始批次生成並儲存
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -629,7 +642,7 @@
     </div>
   </div>
 
-  <!-- ==================== 自訂確認對話框 (取代 window.confirm) ==================== -->
+  <!-- ==================== 自訂確認對話框 ==================== -->
   <div id="modal-custom-confirm" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-sm rounded-2xl shadow-xl p-5 space-y-4 animate-fade-in">
       <h3 id="confirm-dialog-title" class="font-bold text-base text-slate-900">確認操作</h3>
@@ -646,15 +659,13 @@
 
   <!-- ==================== JavaScript 核心邏輯 ==================== -->
   <script>
-    // ==========================================
-    // 1. 狀態管理與預設範例資料庫
-    // ==========================================
     const STORAGE_KEYS = {
       DATA: 'vocabmaster_ai_data_v1',
-      API_KEY: 'vocabmaster_gemini_api_key'
+      API_KEY: 'vocabmaster_gemini_api_key',
+      MODEL: 'vocabmaster_gemini_model',
+      CUSTOM_MODEL: 'vocabmaster_custom_model'
     };
 
-    // 內建精選範例清單（讓使用者首次開啟即可體驗完整功能）
     const DEFAULT_SAMPLE_DATA = {
       lists: [
         { id: 'list-toeic', name: '多益核心必考' },
@@ -748,32 +759,27 @@
       ]
     };
 
-    // 應用程式全域狀態
     let appData = { lists: [], words: [] };
-    let currentListId = 'ALL'; // 'ALL' 代表檢視全部單字，或特定 list.id
+    let currentListId = 'ALL';
     let currentDetailWordId = null;
-    let listModalMode = 'create'; // 'create' | 'rename'
+    let listModalMode = 'create';
     let pendingImportData = null;
 
-    // 測驗狀態
     let quizConfig = {
       selectedListIds: [],
-      mode: 'cloze', // 'cloze' | 'spelling'
+      mode: 'cloze',
       count: 10,
       isAllCount: false
     };
 
     let activeQuiz = {
-      questions: [], // 題目物件陣列
+      questions: [],
       currentIndex: 0,
       score: 0,
-      results: [], // 作答紀錄
+      results: [],
       isAnswered: false
     };
 
-    // ==========================================
-    // 2. 初始化與本地儲存 (localStorage)
-    // ==========================================
     window.addEventListener('DOMContentLoaded', () => {
       loadAppData();
       loadApiKeyUI();
@@ -795,7 +801,6 @@
       } catch (e) {
         console.error('讀取本機資料失敗，載入預設範例', e);
       }
-      // 首次開啟載入預設範例
       appData = JSON.parse(JSON.stringify(DEFAULT_SAMPLE_DATA));
       saveAppData();
     }
@@ -812,9 +817,14 @@
       return (localStorage.getItem(STORAGE_KEYS.API_KEY) || '').trim();
     }
 
-    // ==========================================
-    // 3. 分頁導覽與共用 UI 工具
-    // ==========================================
+    function getSelectedModel() {
+      const saved = localStorage.getItem(STORAGE_KEYS.MODEL) || 'gemini-flash-latest';
+      if (saved === 'custom') {
+        return (localStorage.getItem(STORAGE_KEYS.CUSTOM_MODEL) || 'gemini-flash-latest').trim();
+      }
+      return saved;
+    }
+
     function switchTab(tabName) {
       ['lists', 'quiz', 'settings'].forEach(t => {
         const section = document.getElementById(`tab-${t}`);
@@ -869,7 +879,7 @@
         toast.style.transform = 'translateY(-6px)';
         toast.style.transition = 'all 0.25s ease';
         setTimeout(() => toast.remove(), 250);
-      }, 3000);
+      }, 3500);
     }
 
     function showCustomConfirm(title, message, onConfirm) {
@@ -893,7 +903,6 @@
         .replace(/'/g, '&#039;');
     }
 
-    // 語音朗讀功能 (Web Speech API)
     function speakText(text) {
       if (!('speechSynthesis' in window)) {
         showToast('您的瀏覽器不支援語音朗讀功能', 'warning');
@@ -907,13 +916,12 @@
     }
 
     // ==========================================
-    // 4. 單字清單與單字卡片管理
+    // 單字清單與單字卡片管理
     // ==========================================
     function renderAllListsUI() {
       const container = document.getElementById('list-pills-container');
       container.innerHTML = '';
 
-      // 全部單字膠囊
       const allBtn = document.createElement('button');
       const isAllActive = currentListId === 'ALL';
       allBtn.className = `px-3.5 py-1.5 rounded-full text-xs font-semibold shrink-0 transition-all border ${
@@ -929,7 +937,6 @@
       };
       container.appendChild(allBtn);
 
-      // 各別自訂清單膠囊
       appData.lists.forEach(list => {
         const count = appData.words.filter(w => w.listId === list.id).length;
         const isActive = currentListId === list.id;
@@ -948,7 +955,6 @@
         container.appendChild(btn);
       });
 
-      // 更新當前清單標題與操作按鈕顯示
       const titleEl = document.getElementById('current-list-title');
       const countEl = document.getElementById('current-list-count');
       const actionsEl = document.getElementById('current-list-actions');
@@ -993,7 +999,7 @@
               <i class="fa-solid fa-folder-open"></i>
             </div>
             <div class="text-sm font-bold text-slate-700">目前沒有符合的單字</div>
-            <p class="text-xs text-slate-500">點擊上方「新增單字」開始建立您的專屬單字庫！</p>
+            <p class="text-xs text-slate-500">點擊上方「新增單字」或「批次 AI 建字」建立您的專屬單字庫！</p>
           </div>
         `;
         return;
@@ -1032,7 +1038,6 @@
       }).join('');
     }
 
-    // 清單新增/重新命名/刪除
     function openListModal(mode) {
       listModalMode = mode;
       const titleEl = document.getElementById('list-modal-title');
@@ -1057,10 +1062,7 @@
         return;
       }
       if (listModalMode === 'create') {
-        const newList = {
-          id: 'list-' + Date.now(),
-          name
-        };
+        const newList = { id: 'list-' + Date.now(), name };
         appData.lists.push(newList);
         currentListId = newList.id;
         showToast(`已建立清單「${name}」`, 'success');
@@ -1096,7 +1098,6 @@
       );
     }
 
-    // 單字詳情卡片檢視
     function openWordDetail(wordId) {
       const w = appData.words.find(item => item.id === wordId);
       if (!w) return;
@@ -1108,35 +1109,20 @@
       document.getElementById('detail-example-en').textContent = w.exampleEn || '尚未設定英文例句';
       document.getElementById('detail-example-zh').textContent = w.exampleZh || '';
 
-      // 搭配詞
       const collEl = document.getElementById('detail-collocations');
-      if (w.collocations && w.collocations.length > 0) {
-        collEl.innerHTML = w.collocations.map(c =>
-          `<span class="bg-indigo-50 text-indigo-700 border border-indigo-100 px-2.5 py-1 rounded-lg text-xs font-medium">${escapeHtml(c)}</span>`
-        ).join('');
-      } else {
-        collEl.innerHTML = `<span class="text-xs text-slate-400">無搭配詞紀錄</span>`;
-      }
+      collEl.innerHTML = (w.collocations && w.collocations.length > 0)
+        ? w.collocations.map(c => `<span class="bg-indigo-50 text-indigo-700 border border-indigo-100 px-2.5 py-1 rounded-lg text-xs font-medium">${escapeHtml(c)}</span>`).join('')
+        : `<span class="text-xs text-slate-400">無搭配詞紀錄</span>`;
 
-      // 片語
       const phrEl = document.getElementById('detail-phrases');
-      if (w.phrases && w.phrases.length > 0) {
-        phrEl.innerHTML = w.phrases.map(p =>
-          `<li class="flex items-start gap-2 bg-emerald-50/60 border border-emerald-100 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-angle-right text-emerald-500 mt-0.5"></i><span>${escapeHtml(p)}</span></li>`
-        ).join('');
-      } else {
-        phrEl.innerHTML = `<li class="text-xs text-slate-400">無片語紀錄</li>`;
-      }
+      phrEl.innerHTML = (w.phrases && w.phrases.length > 0)
+        ? w.phrases.map(p => `<li class="flex items-start gap-2 bg-emerald-50/60 border border-emerald-100 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-angle-right text-emerald-500 mt-0.5"></i><span>${escapeHtml(p)}</span></li>`).join('')
+        : `<li class="text-xs text-slate-400">無片語紀錄</li>`;
 
-      // 衍生字
       const derEl = document.getElementById('detail-derivatives');
-      if (w.derivatives && w.derivatives.length > 0) {
-        derEl.innerHTML = w.derivatives.map(d =>
-          `<span class="bg-amber-50 text-amber-800 border border-amber-200/70 px-2.5 py-1 rounded-lg text-xs font-medium">${escapeHtml(d)}</span>`
-        ).join('');
-      } else {
-        derEl.innerHTML = `<span class="text-xs text-slate-400">無衍生字紀錄</span>`;
-      }
+      derEl.innerHTML = (w.derivatives && w.derivatives.length > 0)
+        ? w.derivatives.map(d => `<span class="bg-amber-50 text-amber-800 border border-amber-200/70 px-2.5 py-1 rounded-lg text-xs font-medium">${escapeHtml(d)}</span>`).join('')
+        : `<span class="text-xs text-slate-400">無衍生字紀錄</span>`;
 
       openModal('modal-word-detail');
     }
@@ -1161,7 +1147,6 @@
       openWordFormModal(w);
     }
 
-    // 新增 / 編輯單字表單
     function openWordFormModal(editWordObj = null) {
       if (appData.lists.length === 0) {
         appData.lists.push({ id: 'list-default', name: '預設單字本' });
@@ -1253,46 +1238,63 @@
     }
 
     // ==========================================
-    // 5. Gemini API 整合（自動補全單字 & 造句出題）
+    // Gemini API 核心呼叫（含 12 秒強制逾時保護）
     // ==========================================
-    async function callGeminiJSON(promptText) {
+    async function callGeminiJSON(promptText, timeoutMs = 12000) {
       const apiKey = getApiKey();
       if (!apiKey) {
-        throw new Error('NO_API_KEY');
+        throw new Error('尚未設定 API Key');
       }
 
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: promptText }] }],
-          generationConfig: {
-            responseMimeType: 'application/json',
-            temperature: 0.4
-          }
-        })
-      });
+      const model = getSelectedModel();
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error?.message || `HTTP ${response.status}`);
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal,
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: promptText }] }],
+            generationConfig: {
+              responseMimeType: 'application/json',
+              temperature: 0.3
+            }
+          })
+        });
+
+        clearTimeout(timer);
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error?.message || `HTTP 錯誤 ${response.status}`);
+        }
+
+        const data = await response.json();
+        const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!rawText) throw new Error('AI 未回傳任何文字內容');
+
+        const cleaned = rawText.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+        return JSON.parse(cleaned);
+      } catch (err) {
+        clearTimeout(timer);
+        if (err.name === 'AbortError') {
+          throw new Error('連線逾時（超過 12 秒），請檢查網路或至設定切換為 gemini-3.1-flash-lite-preview');
+        }
+        throw err;
       }
-
-      const data = await response.json();
-      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!rawText) throw new Error('EMPTY_RESPONSE');
-      return JSON.parse(rawText);
     }
 
-    // AI 一鍵自動補全單字詳情
+    // 單字 AI 自動補全
     async function autoGenerateWordDetails() {
       const word = document.getElementById('form-word-input').value.trim();
       if (!word) {
         showToast('請先輸入英文單字！', 'warning');
         return;
       }
-
       if (!getApiKey()) {
         showToast('尚未設定 Gemini API Key，請先至「設定與備份」填寫金鑰', 'warning');
         return;
@@ -1304,18 +1306,17 @@
       btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 生成中...`;
 
       try {
-        const prompt = `你是一位專業的台灣英文教師。請針對英文單字 "${word}" 提供繁體中文學習資料，並嚴格回傳以下 JSON 結構：
+        const prompt = `針對英文單字 "${word}"，回傳繁體中文學習資料的 JSON 物件（精簡扼要，加快速度）：
 {
-  "pos": "最常見詞性縮寫，例如 v. 或 n. 或 adj.",
-  "meaning": "精準的繁體中文解釋（多個意思用逗號分隔）",
-  "exampleEn": "一句自然、實用且能清楚展現該單字用法的英文例句（必須包含該單字）",
-  "exampleZh": "上述英文例句的流暢繁體中文翻譯",
-  "collocations": ["常用搭配詞1 (中文)", "常用搭配詞2 (中文)", "常用搭配詞3 (中文)"],
-  "phrases": ["相關實用片語或慣用語1 (中文解釋)", "相關實用片語2 (中文解釋)"],
+  "pos": "詞性縮寫如 v. / n. / adj.",
+  "meaning": "繁體中文解釋",
+  "exampleEn": "包含該單字的實用英文例句",
+  "exampleZh": "例句繁體中文翻譯",
+  "collocations": ["搭配詞1 (中文)", "搭配詞2 (中文)"],
+  "phrases": ["實用片語1 (中文)", "實用片語2 (中文)"],
   "derivatives": ["衍生字1 (詞性. 中文)", "衍生字2 (詞性. 中文)"]
 }`;
-
-        const result = await callGeminiJSON(prompt);
+        const result = await callGeminiJSON(prompt, 12000);
 
         document.getElementById('form-pos-input').value = result.pos || '';
         document.getElementById('form-meaning-input').value = result.meaning || '';
@@ -1325,7 +1326,7 @@
         document.getElementById('form-phrases').value = (result.phrases || []).join('\n');
         document.getElementById('form-derivatives').value = (result.derivatives || []).join(', ');
 
-        showToast(`已透過 AI 自動補全「${word}」的完整學習資料！`, 'success');
+        showToast(`已完成「${word}」的 AI 補全！`, 'success');
       } catch (err) {
         console.error(err);
         showToast(`AI 生成失敗：${err.message}`, 'error');
@@ -1335,16 +1336,106 @@
       }
     }
 
+    // 批次 AI 生成多個單字
+    function openBatchModal() {
+      if (!getApiKey()) {
+        showToast('請先至「設定與備份」填入 Gemini API Key 才能使用批次生成', 'warning');
+        switchTab('settings');
+        return;
+      }
+      if (appData.lists.length === 0) {
+        appData.lists.push({ id: 'list-default', name: '預設單字本' });
+        saveAppData();
+        renderAllListsUI();
+      }
+      const selectEl = document.getElementById('batch-list-select');
+      selectEl.innerHTML = appData.lists.map(l =>
+        `<option value="${l.id}">${escapeHtml(l.name)}</option>`
+      ).join('');
+      selectEl.value = currentListId !== 'ALL' ? currentListId : appData.lists[0].id;
+      document.getElementById('batch-words-input').value = '';
+      document.getElementById('batch-progress-box').classList.add('hidden');
+      openModal('modal-batch-words');
+    }
+
+    async function executeBatchAiGenerate() {
+      const raw = document.getElementById('batch-words-input').value;
+      const words = Array.from(new Set(
+        raw.split(/[,，\n\r]+/).map(s => s.trim()).filter(Boolean)
+      )).slice(0, 15);
+
+      if (words.length === 0) {
+        showToast('請至少輸入一個英文單字', 'warning');
+        return;
+      }
+
+      const targetListId = document.getElementById('batch-list-select').value;
+      const btn = document.getElementById('btn-batch-run');
+      const progressBox = document.getElementById('batch-progress-box');
+      const progressText = document.getElementById('batch-progress-text');
+
+      btn.disabled = true;
+      progressBox.classList.remove('hidden');
+      progressText.textContent = `正在一次打包生成 ${words.length} 個單字詳情，請稍候約 3～6 秒...`;
+
+      try {
+        const prompt = `請針對以下英文單字清單：${JSON.stringify(words)}，為每個單字提供精簡實用的繁體中文學習資料，並嚴格回傳 JSON 陣列（Array of Objects）：
+[
+  {
+    "word": "單字原形",
+    "pos": "詞性縮寫如 v. / n. / adj.",
+    "meaning": "繁體中文解釋",
+    "exampleEn": "包含該單字的實用英文例句",
+    "exampleZh": "例句繁體中文翻譯",
+    "collocations": ["搭配詞1 (中文)", "搭配詞2 (中文)"],
+    "phrases": ["實用片語1 (中文)"],
+    "derivatives": ["衍生字1 (詞性. 中文)"]
+  }
+]`;
+        const results = await callGeminiJSON(prompt, 20000);
+        if (!Array.isArray(results)) {
+          throw new Error('回傳格式非陣列');
+        }
+
+        let added = 0;
+        results.forEach((item, idx) => {
+          if (!item.word || !item.meaning) return;
+          appData.words.unshift({
+            id: `w-${Date.now()}-${idx}`,
+            listId: targetListId,
+            word: String(item.word).trim(),
+            pos: item.pos || '',
+            meaning: item.meaning || '',
+            exampleEn: item.exampleEn || '',
+            exampleZh: item.exampleZh || '',
+            collocations: Array.isArray(item.collocations) ? item.collocations : [],
+            phrases: Array.isArray(item.phrases) ? item.phrases : [],
+            derivatives: Array.isArray(item.derivatives) ? item.derivatives : []
+          });
+          added++;
+        });
+
+        saveAppData();
+        renderAllListsUI();
+        renderWordCards();
+        closeModal('modal-batch-words');
+        showToast(`批次生成完成！成功新增 ${added} 個單字`, 'success');
+      } catch (err) {
+        showToast(`批次生成失敗：${err.message}`, 'error');
+      } finally {
+        btn.disabled = false;
+        progressBox.classList.add('hidden');
+      }
+    }
+
     // ==========================================
-    // 6. 測驗設定與多種測驗模式引擎
+    // 測驗設定與測驗引擎
     // ==========================================
     function initQuizSetupUI() {
       const container = document.getElementById('quiz-lists-selector');
-      // 預設若無勾選任何清單，自動全選
       if (quizConfig.selectedListIds.length === 0 && appData.lists.length > 0) {
         quizConfig.selectedListIds = appData.lists.map(l => l.id);
       }
-      // 過濾掉已不存在的清單 ID
       quizConfig.selectedListIds = quizConfig.selectedListIds.filter(id =>
         appData.lists.some(l => l.id === id)
       );
@@ -1418,11 +1509,13 @@
       }
     }
 
-    function setQuizCount(val) {
+    function setQuizCount(val, btnEl) {
       document.querySelectorAll('.count-preset-btn').forEach(btn => {
         btn.className = 'count-preset-btn px-3.5 py-2 rounded-xl text-xs font-semibold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-all';
       });
-      event.target.className = 'count-preset-btn px-3.5 py-2 rounded-xl text-xs font-semibold border border-brand-600 bg-brand-50 text-brand-700 transition-all';
+      if (btnEl) {
+        btnEl.className = 'count-preset-btn px-3.5 py-2 rounded-xl text-xs font-semibold border border-brand-600 bg-brand-50 text-brand-700 transition-all';
+      }
 
       const input = document.getElementById('quiz-count-input');
       if (val === 'all') {
@@ -1442,7 +1535,6 @@
       });
     }
 
-    // 啟動測驗
     function startQuiz(customWordPool = null) {
       const pool = customWordPool || getAvailableQuizWords();
       if (pool.length === 0) {
@@ -1463,7 +1555,6 @@
       }
 
       const finalCount = Math.min(requestedCount, pool.length);
-      // 隨機洗牌並抽取指定題數
       const shuffled = [...pool].sort(() => Math.random() - 0.5).slice(0, finalCount);
 
       activeQuiz = {
@@ -1489,12 +1580,10 @@
 
       activeQuiz.isAnswered = false;
 
-      // 更新進度條
       document.getElementById('quiz-progress-text').textContent = `第 ${idx + 1} / ${total} 題`;
       document.getElementById('quiz-score-live').textContent = `得分：${activeQuiz.score}`;
       document.getElementById('quiz-progress-bar').style.width = `${((idx + 1) / total) * 100}%`;
 
-      // 重置回饋區與發音按鈕
       document.getElementById('quiz-feedback-area').classList.add('hidden');
       document.getElementById('quiz-tts-btn').classList.add('hidden');
 
@@ -1503,16 +1592,13 @@
       const modeBadge = document.getElementById('quiz-mode-badge');
 
       if (quizConfig.mode === 'cloze') {
-        // ===== 模式 A：AI 自動造句單字填空選擇題 =====
         modeBadge.textContent = '語境填空選擇題 (4選1)';
         modeBadge.className = 'text-xs font-semibold px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700';
 
-        // 準備 4 個選項（1 正解 + 3 干擾項）
         const distractors = buildDistractors(targetWord, 3);
         const options = [targetWord.word, ...distractors].sort(() => Math.random() - 0.5);
         qItem.options = options;
 
-        // 嘗試使用 Gemini AI 生成全新語境例句，無金鑰或失敗則降級使用本機例句
         let sentenceEn = '';
         let sentenceZh = '';
         let isAiGenerated = false;
@@ -1521,32 +1607,29 @@
           const loadingOverlay = document.getElementById('quiz-question-loading');
           loadingOverlay.classList.remove('hidden');
           try {
-            const prompt = `請針對英文單字 "${targetWord.word}"（詞性：${targetWord.pos}，中文意思：${targetWord.meaning}），造一個全新的自然英文例句（CEFR B1-B2 程度），必須精準使用 "${targetWord.word}" 這個單字原形（或明確可辨識之形式），並提供繁體中文翻譯。
-嚴格回傳 JSON 格式：
+            const prompt = `請針對英文單字 "${targetWord.word}"（詞性：${targetWord.pos}，中文意思：${targetWord.meaning}），造一個自然的英文例句，必須包含 "${targetWord.word}" 這個單字，並回傳 JSON：
 {
-  "sentenceEn": "包含該單字的完整英文句子",
-  "sentenceZh": "該句子的繁體中文翻譯"
+  "sentenceEn": "包含該單字的英文句子",
+  "sentenceZh": "句子的繁體中文翻譯"
 }`;
-            const aiRes = await callGeminiJSON(prompt);
+            const aiRes = await callGeminiJSON(prompt, 10000);
             if (aiRes.sentenceEn && aiRes.sentenceEn.toLowerCase().includes(targetWord.word.toLowerCase())) {
               sentenceEn = aiRes.sentenceEn;
               sentenceZh = aiRes.sentenceZh || '';
               isAiGenerated = true;
             }
           } catch (e) {
-            console.warn('AI 造句降級為本機例句:', e);
+            console.warn('AI 造句自動降級為本機例句:', e);
           } finally {
             loadingOverlay.classList.add('hidden');
           }
         }
 
-        // 若無 AI 造句則使用本機儲存例句
         if (!sentenceEn) {
           if (targetWord.exampleEn && targetWord.exampleEn.toLowerCase().includes(targetWord.word.toLowerCase())) {
             sentenceEn = targetWord.exampleEn;
             sentenceZh = targetWord.exampleZh || '';
           } else {
-            // 萬一該單字沒存例句，建立基礎語義提示句
             sentenceEn = `Please choose the English word that means "${targetWord.meaning}" (${targetWord.pos || 'word'}).`;
             sentenceZh = `請選出符合中文意思「${targetWord.meaning}」的英文單字。`;
           }
@@ -1555,7 +1638,6 @@
         qItem.generatedSentence = sentenceEn;
         qItem.sentenceZh = sentenceZh;
 
-        // 將例句中的目標單字替換為底線空格
         const regex = new RegExp(`\\b${escapeRegExp(targetWord.word)}\\w*\\b`, 'gi');
         const clozeSentence = sentenceEn.replace(regex, '<span class="inline-block min-w-[90px] border-b-2 border-brand-600 text-brand-600 font-bold text-center px-2 mx-1">______</span>');
 
@@ -1578,7 +1660,6 @@
           </div>
         `;
       } else {
-        // ===== 模式 B：中文與詞性拼字測驗 =====
         modeBadge.textContent = '中文與詞性拼字測驗';
         modeBadge.className = 'text-xs font-semibold px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700';
 
@@ -1590,7 +1671,7 @@
             <span class="inline-block px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-600 text-xs font-bold">${escapeHtml(targetWord.pos || '單字')}</span>
             <h3 class="text-2xl font-bold text-slate-900">${escapeHtml(targetWord.meaning)}</h3>
             <div class="pt-1">
-              <button type="button" onclick="revealSpellingHint('${escapeHtml(firstLetter)}', ${wordLength})" id="btn-spelling-hint" class="text-xs text-brand-600 hover:underline font-medium">
+              <button type="button" onclick="revealSpellingHint()" id="btn-spelling-hint" class="text-xs text-brand-600 hover:underline font-medium">
                 <i class="fa-regular fa-lightbulb"></i> 顯示首字母與字數提示
               </button>
               <p id="spelling-hint-text" class="hidden text-xs font-mono font-bold text-amber-600 mt-1">
@@ -1616,12 +1697,11 @@
       }
     }
 
-    function revealSpellingHint(firstLetter, len) {
+    function revealSpellingHint() {
       document.getElementById('btn-spelling-hint').classList.add('hidden');
       document.getElementById('spelling-hint-text').classList.remove('hidden');
     }
 
-    // 建立選擇題干擾項（優先從單字庫抽取同詞性或隨機單字，不足則用內建高頻字補充）
     function buildDistractors(targetWord, count) {
       const fallbackPool = [
         'establish', 'determine', 'significant', 'maintain', 'require',
@@ -1642,7 +1722,6 @@
       return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
-    // 處理模式 A 選擇題作答
     function submitClozeAnswer(selectedOpt, btnEl) {
       if (activeQuiz.isAnswered) return;
       activeQuiz.isAnswered = true;
@@ -1653,7 +1732,6 @@
 
       if (isCorrect) activeQuiz.score++;
 
-      // 標記按鈕顏色
       document.querySelectorAll('.quiz-opt-btn').forEach(btn => {
         btn.disabled = true;
         const optText = btn.querySelector('span:last-child').textContent;
@@ -1669,7 +1747,6 @@
       recordAndShowFeedback(isCorrect, selectedOpt, qItem);
     }
 
-    // 處理模式 B 拼字測驗作答
     function submitSpellingAnswer(e) {
       e.preventDefault();
       if (activeQuiz.isAnswered) return;
@@ -1741,7 +1818,6 @@
       }
 
       document.getElementById('quiz-feedback-area').classList.remove('hidden');
-      // 自動朗讀正確單字加強記憶
       speakText(w.word);
     }
 
@@ -1772,7 +1848,6 @@
       initQuizSetupUI();
     }
 
-    // 結算畫面
     function finishQuiz() {
       document.getElementById('quiz-active-view').classList.add('hidden');
       document.getElementById('quiz-result-view').classList.remove('hidden');
@@ -1823,12 +1898,48 @@
     }
 
     // ==========================================
-    // 7. 系統設定、API Key 測試與 JSON 備份轉移
+    // 系統設定、API Key 測試與 JSON 備份轉移
     // ==========================================
     function loadApiKeyUI() {
       const key = getApiKey();
+      const savedModel = localStorage.getItem(STORAGE_KEYS.MODEL) || 'gemini-flash-latest';
       document.getElementById('gemini-api-key-input').value = key;
+      const selectEl = document.getElementById('gemini-model-select');
+      const customInput = document.getElementById('gemini-custom-model-input');
+
+      if ([...selectEl.options].some(o => o.value === savedModel)) {
+        selectEl.value = savedModel;
+      } else {
+        selectEl.value = 'gemini-flash-latest';
+      }
+
+      if (savedModel === 'custom') {
+        customInput.classList.remove('hidden');
+        customInput.value = localStorage.getItem(STORAGE_KEYS.CUSTOM_MODEL) || '';
+      } else {
+        customInput.classList.add('hidden');
+      }
+
       updateApiStatusBadge(Boolean(key));
+    }
+
+    function onModelSelectChange() {
+      const val = document.getElementById('gemini-model-select').value;
+      const customInput = document.getElementById('gemini-custom-model-input');
+      localStorage.setItem(STORAGE_KEYS.MODEL, val);
+      if (val === 'custom') {
+        customInput.classList.remove('hidden');
+        customInput.value = localStorage.getItem(STORAGE_KEYS.CUSTOM_MODEL) || '';
+        customInput.focus();
+      } else {
+        customInput.classList.add('hidden');
+        showToast(`已切換模型為 ${val}`, 'info');
+      }
+    }
+
+    function saveCustomModelInput() {
+      const customVal = document.getElementById('gemini-custom-model-input').value.trim();
+      localStorage.setItem(STORAGE_KEYS.CUSTOM_MODEL, customVal);
     }
 
     function updateApiStatusBadge(hasKey) {
@@ -1863,49 +1974,58 @@
 
     function saveApiKey() {
       const val = document.getElementById('gemini-api-key-input').value.trim();
+      const model = document.getElementById('gemini-model-select').value;
       localStorage.setItem(STORAGE_KEYS.API_KEY, val);
+      localStorage.setItem(STORAGE_KEYS.MODEL, model);
+      if (model === 'custom') {
+        saveCustomModelInput();
+      }
       updateApiStatusBadge(Boolean(val));
-      showToast(val ? 'Gemini API Key 已儲存至本機！' : '已清除 API Key', 'success');
+      showToast(val ? '設定與 API Key 已儲存至本機！' : '已清除 API Key', 'success');
     }
 
     function clearApiKey() {
       document.getElementById('gemini-api-key-input').value = '';
       localStorage.removeItem(STORAGE_KEYS.API_KEY);
       updateApiStatusBadge(false);
+      document.getElementById('api-test-result-box').classList.add('hidden');
       showToast('已移除 API Key', 'info');
     }
 
     async function testGeminiConnection() {
       const val = document.getElementById('gemini-api-key-input').value.trim();
+      const resultBox = document.getElementById('api-test-result-box');
+
       if (!val) {
         showToast('請先輸入 Gemini API Key 再測試連線', 'warning');
         return;
       }
-      // 先暫存以便呼叫測試
-      localStorage.setItem(STORAGE_KEYS.API_KEY, val);
-      updateApiStatusBadge(true);
+
+      saveApiKey();
 
       const btn = document.getElementById('btn-test-api');
       const origHtml = btn.innerHTML;
       btn.disabled = true;
       btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 測試連線中...`;
+      resultBox.classList.add('hidden');
 
       try {
-        const res = await callGeminiJSON('請回傳 {"status": "ok"}');
-        if (res.status === 'ok') {
-          showToast('連線成功！Gemini AI 功能已可正常使用。', 'success');
-        } else {
-          showToast('連線成功，已儲存金鑰！', 'success');
-        }
+        const res = await callGeminiJSON('請回傳 {"status": "ok"}', 10000);
+        resultBox.className = 'p-3 rounded-xl text-xs leading-relaxed bg-emerald-50 border border-emerald-200 text-emerald-800';
+        resultBox.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i> <strong>連線成功！</strong>目前使用模型：<code>${escapeHtml(getSelectedModel())}</code>，所有 AI 生成功能皆可正常使用。`;
+        resultBox.classList.remove('hidden');
+        showToast('API 連線測試成功！', 'success');
       } catch (err) {
-        showToast(`連線測試失敗：${err.message}`, 'error');
+        resultBox.className = 'p-3 rounded-xl text-xs leading-relaxed bg-rose-50 border border-rose-200 text-rose-800';
+        resultBox.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600"></i> <strong>連線失敗：</strong>${escapeHtml(err.message)}`;
+        resultBox.classList.remove('hidden');
+        showToast('連線測試失敗，請查看下方錯誤說明', 'error');
       } finally {
         btn.disabled = false;
         btn.innerHTML = origHtml;
       }
     }
 
-    // JSON 匯出
     function exportDataToJson() {
       const exportPayload = {
         app: 'VocabMaster AI',
@@ -1927,7 +2047,6 @@
       showToast('已下載 JSON 備份檔案！', 'success');
     }
 
-    // JSON 匯入
     function handleJsonFileSelect(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -1963,7 +2082,6 @@
         currentListId = 'ALL';
         showToast('已完全覆蓋並匯入單字庫資料！', 'success');
       } else {
-        // 合併模式：比對清單名稱避免重複建立，單字則避免同清單同拼字重複
         const listIdMap = {};
         pendingImportData.lists.forEach(impList => {
           const existing = appData.lists.find(l => l.name === impList.name);
