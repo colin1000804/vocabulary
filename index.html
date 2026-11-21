@@ -745,6 +745,7 @@
       DATA: 'vocabmaster_ai_data_v1',
       CORRUPTED_BACKUP: 'vocabmaster_ai_data_corrupted_backup',
       DAILY_NEW_TRACKER: 'vocabmaster_daily_new_tracker',
+      DAILY_NEW_LIMIT: 'vocabmaster_daily_new_limit',
       API_KEY: 'vocabmaster_gemini_api_key',
       MODEL: 'vocabmaster_gemini_model',
       CUSTOM_MODEL: 'vocabmaster_custom_model',
@@ -1818,6 +1819,13 @@
     }
 
     function initQuizSetupUI() {
+      const savedLimit = parseInt(localStorage.getItem(STORAGE_KEYS.DAILY_NEW_LIMIT), 10);
+      if (!isNaN(savedLimit) && savedLimit >= 0) {
+        quizConfig.dailyNewLimit = savedLimit;
+        const limitInput = document.getElementById('quiz-daily-new-limit');
+        if (limitInput) limitInput.value = savedLimit;
+      }
+
       const container = document.getElementById('quiz-lists-selector');
       if (!quizConfig.hasInitializedLists && appData.lists.length > 0) {
         quizConfig.selectedListIds = appData.lists.map(l => l.id);
@@ -1872,6 +1880,7 @@
       quizConfig.excludeUnverified = document.getElementById('quiz-exclude-unverified-checkbox').checked;
       const limitVal = parseInt(document.getElementById('quiz-daily-new-limit').value, 10);
       quizConfig.dailyNewLimit = isNaN(limitVal) || limitVal < 0 ? 0 : limitVal;
+      localStorage.setItem(STORAGE_KEYS.DAILY_NEW_LIMIT, String(quizConfig.dailyNewLimit));
       updateSelectedQuizWordsCount();
     }
 
@@ -2392,7 +2401,7 @@
       showToast(includeProgress ? '已下載個人完整備份檔！' : '已下載乾淨分享版 JSON！', 'success');
     }
 
-function parseDelimitedTextToWords(rawText) {
+    function parseDelimitedTextToWords(rawText) {
       const text = rawText.replace(/^\uFEFF/, '');
       const firstLine = text.split(/\r?\n/)[0] || '';
       const delimiter = firstLine.includes('\t') ? '\t' : ',';
