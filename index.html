@@ -2432,7 +2432,7 @@ function parseDelimitedTextToWords(rawText) {
         parsedWords.push({ word: cols[0], pos, meaning: needsCompletion ? '（待補充解釋）' : meaning, exampleEn, exampleZh, needsCompletion });
       });
       return parsedWords;
-    }}
+    }
 
     function decodeArrayBufferSmart(buffer) {
       try { return { text: new TextDecoder('utf-8', { fatal: true }).decode(buffer), encoding: 'UTF-8' }; }
