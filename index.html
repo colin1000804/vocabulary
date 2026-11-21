@@ -2073,11 +2073,11 @@
     function buildClozeMaskedSentence(rawSentence, targetWordText) {
       const safeSentence = escapeHtml(rawSentence);
       const safeWord = escapeHtml(targetWordText.trim());
-      const pattern = new RegExp(`(?:^|(?<=\\W))${escapeRegExp(safeWord)}[a-zA-Z]*(?:$|(?=\\W))`, 'gi');
+      const pattern = new RegExp(`(^|[^a-zA-Z0-9_])${escapeRegExp(safeWord)}[a-zA-Z]*(?=$|[^a-zA-Z0-9_])`, 'gi');
       let matched = false;
-      const masked = safeSentence.replace(pattern, () => {
+      const masked = safeSentence.replace(pattern, (fullMatch, prefix) => {
         matched = true;
-        return '<span class="inline-block min-w-[90px] border-b-2 border-brand-600 text-brand-600 font-bold text-center px-2 mx-1">______</span>';
+        return `${prefix}<span class="inline-block min-w-[90px] border-b-2 border-brand-600 text-brand-600 font-bold text-center px-2 mx-1">______</span>`;
       });
       return { masked, matched };
     }
@@ -2392,23 +2392,39 @@
       showToast(includeProgress ? '已下載個人完整備份檔！' : '已下載乾淨分享版 JSON！', 'success');
     }
 
-    function parseCsvLine(line, delimiter = ',') {
-      const result = []; let current = '', inQuotes = false;
-      for (let i = 0; i < line.length; i++) {
-        const ch = line[i];
-        if (ch === '"') { if (inQuotes && line[i + 1] === '"') { current += '"'; i++; } else inQuotes = !inQuotes; }
-        else if (ch === delimiter && !inQuotes) { result.push(current.trim()); current = ''; }
-        else current += ch;
-      }
-      result.push(current.trim());
-      return result;
-    }
+function parseDelimitedTextToWords(rawText) {
+      const text = rawText.replace(/^\uFEFF/, '');
+      const firstLine = text.split(/\r?\n/)[0] || '';
+      const delimiter = firstLine.includes('\t') ? '\t' : ',';
 
-    function parseDelimitedTextToWords(rawText) {
-      const lines = rawText.replace(/^\uFEFF/, '').split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      const rows = [];
+      let currentRow = [], currentCell = '', inQuotes = false;
+
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (ch === '"') {
+          if (inQuotes && text[i + 1] === '"') { currentCell += '"'; i++; }
+          else { inQuotes = !inQuotes; }
+        } else if (ch === delimiter && !inQuotes) {
+          currentRow.push(currentCell.trim());
+          currentCell = '';
+        } else if ((ch === '\n' || ch === '\r') && !inQuotes) {
+          if (ch === '\r' && text[i + 1] === '\n') i++;
+          currentRow.push(currentCell.trim());
+          if (currentRow.some(cell => cell !== '')) rows.push(currentRow);
+          currentRow = [];
+          currentCell = '';
+        } else {
+          currentCell += ch;
+        }
+      }
+      if (currentCell !== '' || currentRow.length > 0) {
+        currentRow.push(currentCell.trim());
+        if (currentRow.some(cell => cell !== '')) rows.push(currentRow);
+      }
+
       const parsedWords = [];
-      lines.forEach((line, idx) => {
-        const cols = parseCsvLine(line, line.includes('\t') ? '\t' : ',');
+      rows.forEach((cols, idx) => {
         if (cols.length === 0 || !cols[0] || (idx === 0 && /^(word|單字|英文|vocabulary|term)$/i.test(cols[0]))) return;
         let pos = '', meaning = cols.length === 2 ? cols[1] : (cols[2] || ''), exampleEn = cols[3] || '', exampleZh = cols[4] || '';
         if (cols.length >= 3) pos = cols[1] || '';
@@ -2416,7 +2432,7 @@
         parsedWords.push({ word: cols[0], pos, meaning: needsCompletion ? '（待補充解釋）' : meaning, exampleEn, exampleZh, needsCompletion });
       });
       return parsedWords;
-    }
+    }}
 
     function decodeArrayBufferSmart(buffer) {
       try { return { text: new TextDecoder('utf-8', { fatal: true }).decode(buffer), encoding: 'UTF-8' }; }
