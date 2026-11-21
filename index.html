@@ -2105,6 +2105,10 @@
     }
 
     function fetchOrReuseClozeSentence(qItem) {
+      if (!qItem.options || qItem.options.length === 0) {
+        qItem.options = shuffleArray([qItem.wordObj.word, ...buildEnglishDistractors(qItem.wordObj, 3)]);
+      }
+
       if (qItem.generatedSentence) {
         return Promise.resolve({
           sentenceEn: qItem.generatedSentence,
@@ -2116,11 +2120,13 @@
       if (qItem.prefetchPromise) return qItem.prefetchPromise;
 
       const targetWord = qItem.wordObj;
+      const distractors = qItem.options.filter(opt => opt.toLowerCase() !== targetWord.word.trim().toLowerCase());
+
       const promise = (async () => {
         if (getApiKey() && navigator.onLine) {
           try {
-            const prompt = `針對英文單字 "${targetWord.word}"（詞性：${targetWord.pos}，中文意思：${targetWord.meaning}），造一個自然的英文例句（必須直接包含原形拼字 "${targetWord.word}"），並附上繁體中文詳解（說明為何此單字符合句意、前後搭配詞線索與用法重點），回傳 JSON：{"sentenceEn":"包含該單字原形的英文句子","sentenceZh":"句子的繁體中文翻譯","explanation":"繁體中文語境與用法詳解（約40-80字）"}`;
-            const aiRes = await callGeminiJSON(prompt, 11000);
+            const prompt = `針對英文單字 "${targetWord.word}"（詞性：${targetWord.pos}，中文：${targetWord.meaning}），造一個自然的英文例句（必須直接包含原形拼字 "${targetWord.word}"）。這題的另外三個干擾選項是：${distractors.join('、')}。請在 explanation 中簡明解釋為何本句語意適合 "${targetWord.word}"，並逐一點出其他三個干擾選項的中文意思與不符句意的原因（總長約 70～120 字，繁體中文）。回傳 JSON：{"sentenceEn":"包含該單字原形的英文句子","sentenceZh":"句子的繁體中文翻譯","explanation":"正解理由與其他三個選項的排除解析"}`;
+            const aiRes = await callGeminiJSON(prompt, 12000);
             if (aiRes.sentenceEn && buildClozeMaskedSentence(aiRes.sentenceEn, targetWord.word).matched) {
               qItem.generatedSentence = aiRes.sentenceEn;
               qItem.sentenceZh = aiRes.sentenceZh || '';
@@ -2138,9 +2144,12 @@
           qItem.generatedSentence = `Choose the English word that means "${targetWord.meaning}" (${targetWord.pos || 'word'}): ${targetWord.word}.`;
           qItem.sentenceZh = `請選出符合中文意思「${targetWord.meaning}」的英文單字。`;
         }
-        qItem.explanation = targetWord.collocations?.length
-          ? `常見搭配用法：${targetWord.collocations.join('、')}`
-          : '';
+
+        const distractorHints = distractors.map(d => {
+          const found = appData.words.find(w => w.word.trim().toLowerCase() === d.toLowerCase());
+          return found ? `${d}（${found.meaning}）` : d;
+        });
+        qItem.explanation = `本句需要表達「${targetWord.meaning}」，故選 ${targetWord.word}；其餘干擾項為：${distractorHints.join('、')}，語意皆不符合本句上下文。`;
         qItem.isAiSentence = false;
         return { sentenceEn: qItem.generatedSentence, sentenceZh: qItem.sentenceZh, explanation: qItem.explanation, isAiGenerated: false };
       })();
@@ -2203,13 +2212,12 @@
       } else {
         modeBadge.textContent = 'AI 語境填空選擇題 (4選1)';
         modeBadge.className = 'text-xs font-semibold px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700';
-        const options = shuffleArray([targetWord.word, ...buildEnglishDistractors(targetWord, 3)]);
-        qItem.options = options;
 
         const loadingOverlay = document.getElementById('quiz-question-loading');
         if (!qItem.generatedSentence && getApiKey() && navigator.onLine) loadingOverlay.classList.remove('hidden');
 
         const { sentenceEn, sentenceZh, isAiGenerated } = await fetchOrReuseClozeSentence(qItem);
+        const options = qItem.options;
         loadingOverlay.classList.add('hidden');
         if (idx + 1 < total) fetchOrReuseClozeSentence(activeQuiz.questions[idx + 1]);
 
@@ -2271,7 +2279,7 @@
       if (storedWord) { updateWordSrsProgress(storedWord, isCorrect, quizConfig.mode); saveAppData(); }
 
       const updatedWord = storedWord || w;
-      const explanationText = qItem.explanation || '';
+      const explanationText = quizConfig.mode === 'cloze' ? (qItem.explanation || '') : '';
       activeQuiz.results.push({
         wordObj: updatedWord,
         isCorrect,
@@ -2292,14 +2300,10 @@
         : '';
 
       const aiDetailHtml = explanationText
-        ? `<div id="quiz-ai-explanation-box" class="mt-2 p-2.5 rounded-lg bg-white/80 border border-black/10 text-xs leading-relaxed">
-             <span class="font-bold text-indigo-700"><i class="fa-solid fa-lightbulb" aria-hidden="true"></i> 題目詳解：</span>${escapeHtml(explanationText)}
+        ? `<div class="mt-2 p-2.5 rounded-lg bg-white/80 border border-black/10 text-xs leading-relaxed">
+             <span class="font-bold text-indigo-700"><i class="fa-solid fa-lightbulb" aria-hidden="true"></i> 選項解析：</span>${escapeHtml(explanationText)}
            </div>`
-        : `<div id="quiz-ai-explanation-box" class="mt-2">
-            <button type="button" data-answer="${escapeHtml(userAnswer)}" data-correct="${isCorrect}" onclick="fetchOnDemandQuizExplanation(this.dataset.answer, this.dataset.correct === 'true')" id="btn-fetch-ai-explain" class="text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-white/90 hover:bg-white text-indigo-700 border border-indigo-200 shadow-sm transition-colors inline-flex items-center gap-1.5">
-              <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> AI 詳解（解析選項差異與記憶技巧）
-            </button>
-           </div>`;
+        : '';
 
       const banner = document.getElementById('quiz-feedback-banner');
       if (isCorrect) {
