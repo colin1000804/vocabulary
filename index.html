@@ -842,6 +842,7 @@
     };
 
     let appData = { lists: [], words: [] };
+    let storageWriteLocked = false;
     let activeListId = 'ALL';
     let cardStatusFilter = 'all';
     let currentDetailWordId = null;
@@ -1084,7 +1085,19 @@
             saveAppData();
             showToast('偵測到本機資料格式異常，已保留備份並載入預設範例', 'error');
           } else {
-            showToast('資料異常且儲存空間不足以建立備份！已暫停寫入以保護原資料，請勿新增單字並先檢查本機資料。', 'error');
+            storageWriteLocked = true;
+            try {
+              const blob = new Blob([raw], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `VocabMaster_EmergencyRaw_${new Date().toISOString().slice(0, 10)}.json`;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+            } catch (_) {}
+            showToast('資料異常且儲存空間不足，已鎖定寫入（本次所有變更都不會儲存），並已嘗試自動下載原始檔。', 'error');
           }
           return;
         }
@@ -1094,6 +1107,10 @@
     }
 
     function saveAppData() {
+      if (storageWriteLocked) {
+        showToast('目前為唯讀保護狀態，變更不會儲存', 'warning');
+        return;
+      }
       try {
         localStorage.setItem(STORAGE_KEYS.DATA, JSON.stringify(appData));
       } catch (e) {
@@ -2311,8 +2328,8 @@ function maskChineseMeaningInSentence(sentenceZh, meaningStr) {
         if (!qItem.generatedSentence && getApiKey() && navigator.onLine) loadingOverlay.classList.remove('hidden');
 
         const { sentenceEn, sentenceZhHint, isAiGenerated } = await fetchOrReuseClozeSentence(qItem);
-        loadingOverlay.classList.add('hidden');
         if (activeQuiz !== quizRef || activeQuiz.currentIndex !== idx) return;
+        loadingOverlay.classList.add('hidden');
         const options = qItem.options;
         if (idx + 1 < total) fetchOrReuseClozeSentence(activeQuiz.questions[idx + 1]);
         const { masked: clozeSentence } = buildClozeMaskedSentence(sentenceEn, targetWord.word);
