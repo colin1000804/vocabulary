@@ -884,7 +884,9 @@
 
       document.querySelectorAll('.app-modal').forEach(modalEl => {
         modalEl.addEventListener('click', (e) => {
-          if (e.target === modalEl) modalEl.classList.add('hidden');
+          if (e.target === modalEl && modalEl.id !== 'modal-word-form' && modalEl.id !== 'modal-batch-words') {
+            modalEl.classList.add('hidden');
+          }
         });
       });
 
@@ -1090,11 +1092,6 @@
     }
 
     function getApiKey() { return (localStorage.getItem(STORAGE_KEYS.API_KEY) || '').trim(); }
-
-    function getSelectedModel() {
-      const saved = localStorage.getItem(STORAGE_KEYS.MODEL) || 'gemini-3.1-flash-lite-preview';
-      return saved === 'custom' ? (localStorage.getItem(STORAGE_KEYS.CUSTOM_MODEL) || 'gemini-3.1-flash-lite-preview').trim() : saved;
-    }
 
     function isWordUnfamiliar(w) { return !w.needsCompletion && (w.wrongCount || 0) > 0; }
     function isWordNew(w) { return !w.needsCompletion && (w.interval || 0) === 0 && (w.correctCount || 0) === 0 && (w.wrongCount || 0) === 0; }
@@ -1898,10 +1895,10 @@
 
         const rowClickAction = hasChildren
           ? `onclick="toggleQuizListExpand('${escapeHtml(list.id)}')"`
-          : '';
+          : `onclick="this.querySelector('input').click()"`;
 
         return `
-          <div style="margin-left: ${depth * 18}px;" ${rowClickAction} class="${hasChildren ? 'cursor-pointer' : ''} flex items-center justify-between px-3 py-2 rounded-xl border text-xs transition-all ${isChecked ? 'border-brand-500 bg-brand-50/60 text-slate-900 font-semibold' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}">
+          <div style="margin-left: ${depth * 18}px;" ${rowClickAction} class="cursor-pointer flex items-center justify-between px-3 py-2 rounded-xl border text-xs transition-all ${isChecked ? 'border-brand-500 bg-brand-50/60 text-slate-900 font-semibold' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}">
             <div class="flex items-center gap-2 truncate flex-1">
               <input type="checkbox" value="${escapeHtml(list.id)}" ${isChecked ? 'checked' : ''} onclick="event.stopPropagation()" onchange="onQuizTreeCheckboxChange(this)" class="w-4 h-4 accent-brand-600 rounded shrink-0 cursor-pointer">
               ${hasChildren
@@ -1909,7 +1906,7 @@
                 : (depth > 0 ? `<span class="text-slate-300 shrink-0">└</span>` : `<span class="w-4 text-center shrink-0"><i class="fa-regular fa-folder text-brand-500" aria-hidden="true"></i></span>`)
               }
               <span class="truncate select-none">${escapeHtml(list.name)}</span>
-              ${hasChildren ? `<span class="text-[11px] px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 shrink-0">${subLists.length} 子清單</span>` : ''}
+              ${hasChildren ? `<span class="text-xs px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 shrink-0">${subLists.length} 子清單</span>` : ''}
             </div>
             <span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full shrink-0 ml-2">${directCount} 字</span>
           </div>`;
@@ -2020,7 +2017,7 @@
 
     function selectWordsByPriority(pool, count) {
       if (quizConfig.priority === 'random') return { words: shuffleArray(pool).slice(0, count), cappedByNewLimit: false };
-      if (quizConfig.priority === 'unfamiliar_only') return { words: shuffleArray(pool.filter(isWordUnfamiliar).sort((a, b) => b.wrongCount - a.wrongCount).slice(0, count)), cappedByNewLimit: false };
+      if (quizConfig.priority === 'unfamiliar_only') return { words: shuffleArray(pool.filter(isWordUnfamiliar)).sort((a, b) => b.wrongCount - a.wrongCount).slice(0, count), cappedByNewLimit: false };
       if (quizConfig.priority === 'due_only') return { words: shuffleArray(pool.filter(isWordDueReview).sort((a, b) => (b.wrongCount - a.wrongCount) || ((a.nextReviewAt || 0) - (b.nextReviewAt || 0))).slice(0, count)), cappedByNewLimit: false };
 
       const groupWrong = shuffleArray(pool.filter(isWordUnfamiliar)).sort((a, b) => b.wrongCount - a.wrongCount);
@@ -2057,8 +2054,6 @@
 
       if (selectedQuestions.length === 0) return showToast('依目前設定沒有可出的題目，請調高每日新字上限', 'warning');
       if (cappedByNewLimit) showToast(`受每日新字上限（${quizConfig.dailyNewLimit} 字）限制，本次共出 ${selectedQuestions.length} 題`, 'info');
-
-      recordTodayLearnedNewWordIds(selectedQuestions.filter(isWordNew).map(w => w.id));
 
       activeQuiz = {
         questions: selectedQuestions.map(w => ({ wordObj: w, generatedSentence: null, sentenceZh: null, explanation: null, isAiSentence: false, prefetchPromise: null, options: [] })),
@@ -2376,7 +2371,11 @@ function maskChineseMeaningInSentence(sentenceZh, meaningStr) {
     function recordAndShowFeedback(isCorrect, userAnswer, qItem) {
       const w = qItem.wordObj;
       const storedWord = appData.words.find(item => item.id === w.id);
-      if (storedWord) { updateWordSrsProgress(storedWord, isCorrect, quizConfig.mode); saveAppData(); }
+      if (storedWord) {
+        if (isWordNew(storedWord)) recordTodayLearnedNewWordIds([storedWord.id]);
+        updateWordSrsProgress(storedWord, isCorrect, quizConfig.mode);
+        saveAppData();
+      }
 
       const updatedWord = storedWord || w;
       const explanationText = quizConfig.mode === 'cloze' ? (qItem.explanation || '') : '';
@@ -2423,31 +2422,6 @@ function maskChineseMeaningInSentence(sentenceZh, meaningStr) {
       if (isAutoSpeakEnabled()) speakText(w.word);
     }
 
-    async function fetchOnDemandQuizExplanation(userAnswer, isCorrect) {
-      if (!getApiKey()) return showToast('請先至「設定與匯入」填入 Gemini API Key', 'warning');
-      const box = document.getElementById('quiz-ai-explanation-box');
-      const qItem = activeQuiz.questions[activeQuiz.currentIndex];
-      const lastResult = activeQuiz.results[activeQuiz.results.length - 1];
-      if (!box || !qItem) return;
-
-      const w = qItem.wordObj;
-      box.innerHTML = `<div class="p-2.5 rounded-lg bg-white/80 border border-indigo-100 text-xs text-indigo-700 flex items-center gap-2"><i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> AI 正在撰寫詳解...</div>`;
-
-      try {
-        const wrongContext = !isCorrect ? `學生誤答為「${userAnswer}」，請順便點出它與正確答案的差異或容易混淆的原因。` : '';
-        const optionsContext = qItem.options?.length ? `本題選項有：${qItem.options.join('、')}。` : '';
-        const prompt = `針對英文單字測驗題（目標單字：${w.word}，詞性：${w.pos}，中文：${w.meaning}），${optionsContext}${wrongContext}請用繁體中文提供精簡扼要的學習詳解（包含詞根/記憶技巧、核心用法與選項辨析，約 50～90 字），回傳 JSON：{"explanation":"繁體中文詳解"}`;
-        const res = await callGeminiJSON(prompt, 12000);
-        const text = (res.explanation || '').trim();
-        if (!text) throw new Error('未取得有效詳解');
-
-        qItem.explanation = text;
-        if (lastResult) lastResult.explanation = text;
-        box.innerHTML = `<div class="p-2.5 rounded-lg bg-white/90 border border-black/10 text-xs leading-relaxed text-slate-800"><span class="font-bold text-indigo-700"><i class="fa-solid fa-lightbulb" aria-hidden="true"></i> AI 詳解：</span>${escapeHtml(text)}</div>`;
-      } catch (err) {
-        box.innerHTML = `<div class="text-xs text-rose-700">詳解生成失敗：${escapeHtml(err.message)}</div>`;
-      }
-    }
 
     function speakCurrentQuizWord() {
       const qItem = activeQuiz.questions[activeQuiz.currentIndex];
@@ -2561,7 +2535,13 @@ function maskChineseMeaningInSentence(sentenceZh, meaningStr) {
           savedModel = 'gemini-3.5-flash-lite';
         }
       }
+      const validModels = [...BUILTIN_MODELS.map(m => m.value), ...getCustomModelsList()];
+      if (!validModels.includes(savedModel)) {
+        savedModel = 'gemini-3.5-flash-lite';
+        localStorage.setItem(STORAGE_KEYS.MODEL, savedModel);
+      }
 
+      document.getElementById('gemini-api-key-input').value = key;
       document.getElementById('gemini-api-key-input').value = key;
       renderModelSelectOptions(savedModel);
       document.getElementById('new-model-input-group').classList.add('hidden');
