@@ -984,7 +984,10 @@
         const list = getCorruptedBackupList();
         list.unshift({ savedAt: new Date().toISOString(), rawContent: rawString });
         localStorage.setItem(STORAGE_KEYS.CORRUPTED_BACKUP, JSON.stringify(list.slice(0, 5)));
-      } catch (_) {}
+        return true;
+      } catch (_) {
+        return false;
+      }
     }
 
     function updateCorruptedBackupUI() {
@@ -1075,8 +1078,15 @@
           }
           throw new Error('JSON 結構缺少 lists 或 words');
         } catch (e) {
-          appendCorruptedBackup(raw);
-          showToast('偵測到本機資料格式異常，已保留備份並載入預設範例', 'error');
+          const backedUp = appendCorruptedBackup(raw);
+          appData = JSON.parse(JSON.stringify(DEFAULT_SAMPLE_DATA));
+          if (backedUp) {
+            saveAppData();
+            showToast('偵測到本機資料格式異常，已保留備份並載入預設範例', 'error');
+          } else {
+            showToast('資料異常且儲存空間不足以建立備份！已暫停寫入以保護原資料，請勿新增單字並先檢查本機資料。', 'error');
+          }
+          return;
         }
       }
       appData = JSON.parse(JSON.stringify(DEFAULT_SAMPLE_DATA));
@@ -2242,6 +2252,7 @@ function maskChineseMeaningInSentence(sentenceZh, meaningStr) {
       return promise;
     }
     async function renderCurrentQuizQuestion() {
+      const quizRef = activeQuiz;
       const idx = activeQuiz.currentIndex;
       const total = activeQuiz.questions.length;
       const qItem = activeQuiz.questions[idx];
@@ -2300,10 +2311,10 @@ function maskChineseMeaningInSentence(sentenceZh, meaningStr) {
         if (!qItem.generatedSentence && getApiKey() && navigator.onLine) loadingOverlay.classList.remove('hidden');
 
         const { sentenceEn, sentenceZhHint, isAiGenerated } = await fetchOrReuseClozeSentence(qItem);
-        const options = qItem.options;
         loadingOverlay.classList.add('hidden');
+        if (activeQuiz !== quizRef || activeQuiz.currentIndex !== idx) return;
+        const options = qItem.options;
         if (idx + 1 < total) fetchOrReuseClozeSentence(activeQuiz.questions[idx + 1]);
-
         const { masked: clozeSentence } = buildClozeMaskedSentence(sentenceEn, targetWord.word);
         const hintBlockHtml = sentenceZhHint
           ? `<div class="pt-1">
@@ -2438,6 +2449,8 @@ function maskChineseMeaningInSentence(sentenceZh, meaningStr) {
     }
 
     function resetQuizToSetup() {
+      activeQuiz = { questions: [], currentIndex: 0, score: 0, results: [], isAnswered: false };
+      document.getElementById('quiz-question-loading').classList.add('hidden');
       document.getElementById('quiz-active-view').classList.add('hidden');
       document.getElementById('quiz-result-view').classList.add('hidden');
       document.getElementById('quiz-setup-view').classList.remove('hidden');
