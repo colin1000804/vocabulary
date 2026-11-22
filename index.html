@@ -442,12 +442,22 @@
 
           <div>
             <label for="gemini-model-select" class="block text-xs font-bold text-slate-700 mb-1">AI 模型選擇</label>
-            <select id="gemini-model-select" onchange="onModelSelectChange()" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-brand-500">
-              <option value="gemini-3.1-flash-lite-preview">gemini-3.1-flash-lite-preview（極速輕量版・推薦預設）</option>
-              <option value="gemini-3-flash-preview">gemini-3-flash-preview（標準最新版）</option>
-              <option value="custom">自訂輸入其他模型代號...</option>
-            </select>
-            <input type="text" id="gemini-custom-model-input" aria-label="自訂模型代號" placeholder="請貼上 Google AI Studio 顯示的模型代號" oninput="saveCustomModelInput()" class="hidden mt-2 w-full px-3.5 py-2 bg-white border border-brand-300 rounded-xl text-sm font-mono focus:outline-none focus:border-brand-500" />
+            <div class="flex gap-2">
+              <select id="gemini-model-select" onchange="onModelSelectChange()" class="flex-1 px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-brand-500">
+                <option value="gemini-3.5-flash-lite">gemini-3.5-flash-lite（輕量高額度・預設推薦）</option>
+                <option value="gemini-3.5-flash">gemini-3.5-flash（標準版）</option>
+                <option value="add_new">+ 新增模型代號...</option>
+              </select>
+              <button type="button" id="btn-delete-custom-model" onclick="deleteSelectedCustomModel()" title="刪除此新增模型" aria-label="刪除此新增模型" class="hidden px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-xl text-xs font-semibold transition-colors shrink-0">
+                <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+              </button>
+            </div>
+            <div id="new-model-input-group" class="hidden mt-2 flex gap-2">
+              <input type="text" id="gemini-custom-model-input" aria-label="新增模型代號" placeholder="輸入模型代號，例如：gemini-3.5-flash-lite" class="flex-1 px-3.5 py-2 bg-white border border-brand-300 rounded-xl text-sm font-mono focus:outline-none focus:border-brand-500" />
+              <button type="button" onclick="confirmAddCustomModel()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-xl transition-colors shrink-0">
+                新增至選單
+              </button>
+            </div>
           </div>
 
           <div class="flex flex-wrap items-center gap-2.5 pt-1">
@@ -471,29 +481,46 @@
           <p class="text-xs text-slate-500 mt-1">可匯出個人完整備份或「不含學習進度的乾淨分享檔」；匯入支援 JSON 與台灣 Excel 存出的 Big5 / UTF-8 CSV 單字表。</p>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
           <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between gap-3">
             <div>
-              <div class="font-bold text-sm text-slate-800 flex items-center gap-1.5"><i class="fa-solid fa-file-export text-indigo-600" aria-hidden="true"></i> 匯出單字庫 (JSON)</div>
-              <p class="text-xs text-slate-500 mt-1">分享給學生或他人時，建議選「乾淨分享版」以免對方繼承您的錯題進度。</p>
+              <div class="font-bold text-sm text-slate-800 flex items-center gap-1.5"><i class="fa-solid fa-file-export text-indigo-600" aria-hidden="true"></i> 匯出全字庫 (JSON)</div>
+              <p class="text-xs text-slate-500 mt-1">分享給他人時建議選「乾淨分享版」，不含個人錯題與複習進度。</p>
             </div>
             <div class="space-y-2">
               <button onclick="exportDataToJson(false)" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm">
-                <i class="fa-solid fa-share-nodes" aria-hidden="true"></i> 匯出乾淨分享版（不含個人進度）
+                <i class="fa-solid fa-share-nodes" aria-hidden="true"></i> 匯出乾淨分享版
               </button>
               <button onclick="exportDataToJson(true)" class="w-full py-2 bg-white hover:bg-indigo-50 text-indigo-600 border border-indigo-200 font-semibold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5">
-                <i class="fa-solid fa-download" aria-hidden="true"></i> 匯出個人完整備份（含學習進度）
+                <i class="fa-solid fa-download" aria-hidden="true"></i> 匯出完整備份
               </button>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between gap-3">
+            <div class="space-y-2">
+              <div class="font-bold text-sm text-slate-800 flex items-center gap-1.5"><i class="fa-solid fa-folder-tree text-brand-600" aria-hidden="true"></i> 匯出／匯入清單</div>
+              <p class="text-xs text-slate-500">針對單一清單（含子清單與單字）獨立匯出或匯入。</p>
+              <select id="settings-target-list-select" aria-label="選擇要匯出或匯入的清單" class="w-full px-2.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:border-brand-500"></select>
+            </div>
+            <div class="space-y-2">
+              <button type="button" onclick="exportSelectedListFromSettings(false)" class="w-full py-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-file-export" aria-hidden="true"></i> 匯出所選清單 (JSON)
+              </button>
+              <label class="w-full py-2 bg-white hover:bg-brand-50 text-brand-700 border border-brand-200 font-semibold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
+                <i class="fa-solid fa-file-import" aria-hidden="true"></i> 匯入清單至所選位置
+                <input type="file" id="settings-list-import-input" accept=".json,application/json" onchange="handleListImportToSelectedTarget(event)" class="hidden" />
+              </label>
             </div>
           </div>
 
           <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between gap-3">
             <div>
               <div class="font-bold text-sm text-slate-800 flex items-center gap-1.5"><i class="fa-solid fa-folder-open text-emerald-600" aria-hidden="true"></i> 匯入單字檔案</div>
-              <p class="text-xs text-slate-500 mt-1">支援 <strong>.json</strong> 備份檔，或 <strong>.csv / .tsv / .txt</strong>（自動辨識 UTF-8 與 Big5 編碼）。</p>
+              <p class="text-xs text-slate-500 mt-1">支援 <strong>.json</strong> 備份檔，或 <strong>.csv / .tsv / .txt</strong>（自動辨識 UTF-8 與 Big5）。</p>
             </div>
             <label class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm">
-              <i class="fa-solid fa-upload" aria-hidden="true"></i> 選擇檔案匯入 (JSON / CSV / TXT)
+              <i class="fa-solid fa-upload" aria-hidden="true"></i> 選擇檔案匯入
               <input type="file" id="universal-file-import-input" accept=".json,.csv,.tsv,.txt,application/json,text/csv,text/plain" onchange="handleUniversalFileSelect(event)" class="hidden" />
             </label>
           </div>
@@ -743,6 +770,7 @@
   <script>
     const STORAGE_KEYS = {
       DATA: 'vocabmaster_ai_data_v1',
+      CUSTOM_MODELS_LIST: 'vocabmaster_custom_models_list',
       CORRUPTED_BACKUP: 'vocabmaster_ai_data_corrupted_backup',
       DAILY_NEW_TRACKER: 'vocabmaster_daily_new_tracker',
       DAILY_NEW_LIMIT: 'vocabmaster_daily_new_limit',
@@ -1160,7 +1188,10 @@
       });
       if (tabName === 'quiz') initQuizSetupUI();
       else if (tabName === 'lists') { renderAllListsUI(); renderWordCards(); }
-      else if (tabName === 'settings') updateCorruptedBackupUI();
+      else if (tabName === 'settings') {
+        updateCorruptedBackupUI();
+        populateSettingsListSelector();
+      }
     }
 
     function openModal(id) {
@@ -2393,27 +2424,144 @@
       if (wrongWords.length > 0) startQuiz(wrongWords);
     }
 
+    
+    
+    const BUILTIN_MODELS = [
+      { value: 'gemini-3.5-flash-lite', label: 'gemini-3.5-flash-lite（輕量高速・預設推薦）' },
+      { value: 'gemini-3.5-flash', label: 'gemini-3.5-flash（標準版）' }
+    ];
+
+    function getCustomModelsList() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEYS.CUSTOM_MODELS_LIST);
+        const list = raw ? JSON.parse(raw) : [];
+        return Array.isArray(list) ? list.filter(m => typeof m === 'string' && m.trim()) : [];
+      } catch (_) {
+        return [];
+      }
+    }
+
+    function saveCustomModelsList(list) {
+      localStorage.setItem(STORAGE_KEYS.CUSTOM_MODELS_LIST, JSON.stringify(list));
+    }
+
+    function getSelectedModel() {
+      const saved = localStorage.getItem(STORAGE_KEYS.MODEL) || 'gemini-3.5-flash-lite';
+      if (saved === 'add_new' || saved === 'custom') {
+        return (localStorage.getItem(STORAGE_KEYS.CUSTOM_MODEL) || 'gemini-3.5-flash-lite').trim();
+      }
+      return saved.trim();
+    }
+
+    function renderModelSelectOptions(selectedValue) {
+      const selectEl = document.getElementById('gemini-model-select');
+      const customList = getCustomModelsList();
+      let html = BUILTIN_MODELS.map(m => `<option value="${escapeHtml(m.value)}">${escapeHtml(m.label)}</option>`).join('');
+      customList.forEach(modelId => {
+        html += `<option value="${escapeHtml(modelId)}">${escapeHtml(modelId)}（已新增）</option>`;
+      });
+      html += `<option value="add_new">+ 新增模型代號...</option>`;
+      selectEl.innerHTML = html;
+
+      const allValidValues = [...BUILTIN_MODELS.map(m => m.value), ...customList];
+      selectEl.value = allValidValues.includes(selectedValue) ? selectedValue : 'gemini-3.5-flash-lite';
+      updateDeleteModelButtonVisibility();
+    }
+
+    function updateDeleteModelButtonVisibility() {
+      const selectEl = document.getElementById('gemini-model-select');
+      const delBtn = document.getElementById('btn-delete-custom-model');
+      if (!selectEl || !delBtn) return;
+      delBtn.classList.toggle('hidden', !getCustomModelsList().includes(selectEl.value));
+    }
+
     function loadApiKeyUI() {
       const key = getApiKey();
-      const savedModel = localStorage.getItem(STORAGE_KEYS.MODEL) || 'gemini-3.1-flash-lite-preview';
+      let savedModel = localStorage.getItem(STORAGE_KEYS.MODEL) || 'gemini-3.5-flash-lite';
+      if (savedModel === 'custom') {
+        const legacyCustom = (localStorage.getItem(STORAGE_KEYS.CUSTOM_MODEL) || '').trim();
+        if (legacyCustom) {
+          const list = getCustomModelsList();
+          if (!list.includes(legacyCustom) && !BUILTIN_MODELS.some(m => m.value === legacyCustom)) {
+            list.push(legacyCustom);
+            saveCustomModelsList(list);
+          }
+          savedModel = legacyCustom;
+          localStorage.setItem(STORAGE_KEYS.MODEL, savedModel);
+        } else {
+          savedModel = 'gemini-3.5-flash-lite';
+        }
+      }
+
       document.getElementById('gemini-api-key-input').value = key;
-      const selectEl = document.getElementById('gemini-model-select');
-      const customInput = document.getElementById('gemini-custom-model-input');
-      selectEl.value = [...selectEl.options].some(o => o.value === savedModel) ? savedModel : 'gemini-3.1-flash-lite-preview';
-      if (savedModel === 'custom') { customInput.classList.remove('hidden'); customInput.value = localStorage.getItem(STORAGE_KEYS.CUSTOM_MODEL) || ''; }
-      else customInput.classList.add('hidden');
+      renderModelSelectOptions(savedModel);
+      document.getElementById('new-model-input-group').classList.add('hidden');
       updateApiStatusBadge(Boolean(key));
     }
 
     function onModelSelectChange() {
       const val = document.getElementById('gemini-model-select').value;
+      const inputGroup = document.getElementById('new-model-input-group');
       const customInput = document.getElementById('gemini-custom-model-input');
-      localStorage.setItem(STORAGE_KEYS.MODEL, val);
-      if (val === 'custom') { customInput.classList.remove('hidden'); customInput.value = localStorage.getItem(STORAGE_KEYS.CUSTOM_MODEL) || ''; customInput.focus(); }
-      else { customInput.classList.add('hidden'); showToast(`已切換模型為 ${val}`, 'info'); }
+
+      if (val === 'add_new') {
+        inputGroup.classList.remove('hidden');
+        customInput.value = '';
+        customInput.focus();
+        updateDeleteModelButtonVisibility();
+      } else {
+        inputGroup.classList.add('hidden');
+        localStorage.setItem(STORAGE_KEYS.MODEL, val);
+        updateDeleteModelButtonVisibility();
+        showToast(`已切換模型為 ${val}`, 'info');
+      }
     }
 
-    function saveCustomModelInput() { localStorage.setItem(STORAGE_KEYS.CUSTOM_MODEL, document.getElementById('gemini-custom-model-input').value.trim()); }
+    function confirmAddCustomModel() {
+      const customInput = document.getElementById('gemini-custom-model-input');
+      const newModelId = customInput.value.trim();
+      if (!newModelId) return showToast('請輸入要新增的模型代號', 'warning');
+
+      const customList = getCustomModelsList();
+      const isBuiltin = BUILTIN_MODELS.some(m => m.value === newModelId);
+      if (!isBuiltin && !customList.includes(newModelId)) {
+        customList.push(newModelId);
+        saveCustomModelsList(customList);
+      }
+
+      localStorage.setItem(STORAGE_KEYS.MODEL, newModelId);
+      document.getElementById('new-model-input-group').classList.add('hidden');
+      renderModelSelectOptions(newModelId);
+      showToast(`已新增並切換至模型「${newModelId}」`, 'success');
+    }
+
+    function deleteSelectedCustomModel() {
+      const selectEl = document.getElementById('gemini-model-select');
+      const target = selectEl.value;
+      const customList = getCustomModelsList();
+      if (!customList.includes(target)) return;
+
+      const updated = customList.filter(m => m !== target);
+      saveCustomModelsList(updated);
+      localStorage.setItem(STORAGE_KEYS.MODEL, 'gemini-3.5-flash-lite');
+      renderModelSelectOptions('gemini-3.5-flash-lite');
+      showToast(`已刪除新增模型「${target}」`, 'info');
+    }
+
+    function saveApiKey() {
+      const val = document.getElementById('gemini-api-key-input').value.trim();
+      const selectEl = document.getElementById('gemini-model-select');
+      if (selectEl.value === 'add_new') {
+        const pendingNew = document.getElementById('gemini-custom-model-input').value.trim();
+        if (pendingNew) confirmAddCustomModel();
+        else localStorage.setItem(STORAGE_KEYS.MODEL, 'gemini-3.5-flash-lite');
+      } else {
+        localStorage.setItem(STORAGE_KEYS.MODEL, selectEl.value);
+      }
+      localStorage.setItem(STORAGE_KEYS.API_KEY, val);
+      updateApiStatusBadge(Boolean(val));
+      showToast(val ? '設定與 API Key 已儲存至本機！' : '已清除 API Key', 'success');
+    }
 
     function updateApiStatusBadge(hasKey) {
       const badge = document.getElementById('api-status-badge'), dot = document.getElementById('api-status-dot'), text = document.getElementById('api-status-text');
@@ -2435,17 +2583,7 @@
       input.type = isPass ? 'text' : 'password';
       icon.className = isPass ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
     }
-
-    function saveApiKey() {
-      const val = document.getElementById('gemini-api-key-input').value.trim();
-      const model = document.getElementById('gemini-model-select').value;
-      localStorage.setItem(STORAGE_KEYS.API_KEY, val);
-      localStorage.setItem(STORAGE_KEYS.MODEL, model);
-      if (model === 'custom') saveCustomModelInput();
-      updateApiStatusBadge(Boolean(val));
-      showToast(val ? '設定與 API Key 已儲存至本機！' : '已清除 API Key', 'success');
-    }
-
+    
     function clearApiKey() {
       document.getElementById('gemini-api-key-input').value = '';
       localStorage.removeItem(STORAGE_KEYS.API_KEY);
@@ -2478,6 +2616,133 @@
       a.href = url; a.download = includeProgress ? `VocabMaster_FullBackup_${dateStr}.json` : `VocabMaster_ShareDeck_${dateStr}.json`;
       document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
       showToast(includeProgress ? '已下載個人完整備份檔！' : '已下載乾淨分享版 JSON！', 'success');
+    }
+
+    function populateSettingsListSelector() {
+      const selectEl = document.getElementById('settings-target-list-select');
+      if (!selectEl) return;
+      const preferred = activeListId !== 'ALL' ? activeListId : (appData.lists[0]?.id || '');
+      populateHierarchicalListSelect(selectEl, preferred, {
+        includeRootOption: true,
+        rootLabel: '最上層（獨立主清單）'
+      });
+    }
+
+    function exportSelectedListFromSettings(includeProgress = false) {
+      const selectEl = document.getElementById('settings-target-list-select');
+      const targetListId = selectEl ? selectEl.value : '';
+      if (!targetListId) {
+        return showToast('請先選擇一個單字清單再進行匯出', 'warning');
+      }
+      const rootList = appData.lists.find(l => l.id === targetListId);
+      if (!rootList) return showToast('找不到所選清單', 'error');
+
+      const familyIds = getDescendantListIds(targetListId);
+      const exportedLists = appData.lists
+        .filter(l => familyIds.includes(l.id))
+        .map(l => (l.id === targetListId ? { ...l, parentId: null } : { ...l }));
+
+      const exportedWords = appData.words
+        .filter(w => familyIds.includes(w.listId))
+        .map(w => includeProgress
+          ? { ...w }
+          : { ...w, wrongCount: 0, correctCount: 0, interval: 0, easeFactor: 2.5, nextReviewAt: 0 }
+        );
+
+      const safeName = rootList.name.replace(/[^\w\u4e00-\u9fa5-]+/g, '_') || 'List';
+      const dateStr = new Date().toISOString().slice(0, 10);
+      const blob = new Blob([JSON.stringify({
+        app: 'VocabMaster AI',
+        version: 5,
+        scope: 'single_list',
+        includesProgress: includeProgress,
+        exportedAt: new Date().toISOString(),
+        lists: exportedLists,
+        words: exportedWords
+      }, null, 2)], { type: 'application/json' });
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `VocabMaster_List_${safeName}_${dateStr}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast(`已匯出清單「${rootList.name}」（${exportedWords.length} 字）`, 'success');
+    }
+
+    function handleListImportToSelectedTarget(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const selectEl = document.getElementById('settings-target-list-select');
+      const anchorParentId = selectEl && selectEl.value ? selectEl.value : null;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const { text: content } = decodeArrayBufferSmart(e.target.result);
+          const parsed = JSON.parse(content);
+          if (!Array.isArray(parsed.lists) || !Array.isArray(parsed.words)) {
+            throw new Error('清單 JSON 格式不符，需包含 lists 與 words 陣列');
+          }
+
+          const listIdMap = new Map();
+          const rootImportedLists = parsed.lists.filter(l => !l.parentId || !parsed.lists.some(p => p.id === l.parentId));
+          const remaining = [...parsed.lists];
+          let progress = true;
+
+          while (remaining.length > 0 && progress) {
+            progress = false;
+            for (let i = remaining.length - 1; i >= 0; i--) {
+              const impList = remaining[i];
+              const isRootOfImport = rootImportedLists.some(r => r.id === impList.id);
+              const mappedParentId = isRootOfImport ? anchorParentId : listIdMap.get(impList.parentId);
+
+              if (isRootOfImport || listIdMap.has(impList.parentId)) {
+                const cleanName = String(impList.name || '未命名清單').trim();
+                const existing = appData.lists.find(l => (l.parentId || null) === mappedParentId && l.name === cleanName);
+                if (existing) {
+                  listIdMap.set(impList.id, existing.id);
+                } else {
+                  const newId = 'list-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+                  appData.lists.push({ id: newId, name: cleanName, parentId: mappedParentId || null });
+                  listIdMap.set(impList.id, newId);
+                }
+                remaining.splice(i, 1);
+                progress = true;
+              }
+            }
+          }
+
+          let addedWords = 0;
+          parsed.words
+            .filter(w => w && typeof w.word === 'string' && w.word.trim().length > 0)
+            .forEach(impWord => {
+              const targetListId = listIdMap.get(impWord.listId) || anchorParentId || appData.lists[0]?.id;
+              if (!targetListId) return;
+              if (!appData.words.some(w => w.listId === targetListId && w.word.toLowerCase() === impWord.word.trim().toLowerCase())) {
+                appData.words.push(normalizeWordObject({
+                  ...impWord,
+                  id: 'w-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+                  listId: targetListId
+                }));
+                addedWords++;
+              }
+            });
+
+          saveAppData();
+          renderAllListsUI();
+          renderWordCards();
+          populateSettingsListSelector();
+          showToast(`清單匯入完成！共新增 ${addedWords} 個單字`, 'success');
+        } catch (err) {
+          showToast(`清單匯入失敗：${err.message}`, 'error');
+        } finally {
+          event.target.value = '';
+        }
+      };
+      reader.readAsArrayBuffer(file);
     }
 
     function parseDelimitedTextToWords(rawText) {
