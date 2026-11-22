@@ -851,6 +851,7 @@
     let quizConfig = {
       selectedListIds: [],
       knownListIds: new Set(),
+      expandedListIds: new Set(),
       hasInitializedLists: false,
       excludeUnverified: true,
       dailyNewLimit: 20,
@@ -1883,20 +1884,43 @@
         return;
       }
 
-      container.innerHTML = flatTree.map(({ list, depth }) => {
+      const visibleTree = flatTree.filter(({ list }) => {
+        const ancestors = getAncestorChain(list.id).slice(0, -1);
+        return ancestors.every(anc => quizConfig.expandedListIds.has(anc.id));
+      });
+
+      container.innerHTML = visibleTree.map(({ list, depth }) => {
         const directCount = appData.words.filter(w => w.listId === list.id).length;
+        const subLists = appData.lists.filter(l => l.parentId === list.id);
+        const hasChildren = subLists.length > 0;
+        const isExpanded = quizConfig.expandedListIds.has(list.id);
         const isChecked = quizConfig.selectedListIds.includes(list.id);
+
+        const rowClickAction = hasChildren
+          ? `onclick="toggleQuizListExpand('${escapeHtml(list.id)}')"`
+          : '';
+
         return `
-          <label style="margin-left: ${depth * 18}px;" class="cursor-pointer flex items-center justify-between px-3 py-2 rounded-xl border text-xs transition-all ${isChecked ? 'border-brand-500 bg-brand-50/60 text-slate-900 font-semibold' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}">
-            <div class="flex items-center gap-2 truncate">
-              <input type="checkbox" value="${escapeHtml(list.id)}" ${isChecked ? 'checked' : ''} onchange="onQuizTreeCheckboxChange(this)" class="w-4 h-4 accent-brand-600 rounded shrink-0">
-              ${depth > 0 ? `<span class="text-slate-300">└</span>` : `<i class="fa-regular fa-folder text-brand-500" aria-hidden="true"></i>`}
-              <span class="truncate">${escapeHtml(list.name)}</span>
+          <div style="margin-left: ${depth * 18}px;" ${rowClickAction} class="${hasChildren ? 'cursor-pointer' : ''} flex items-center justify-between px-3 py-2 rounded-xl border text-xs transition-all ${isChecked ? 'border-brand-500 bg-brand-50/60 text-slate-900 font-semibold' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}">
+            <div class="flex items-center gap-2 truncate flex-1">
+              <input type="checkbox" value="${escapeHtml(list.id)}" ${isChecked ? 'checked' : ''} onclick="event.stopPropagation()" onchange="onQuizTreeCheckboxChange(this)" class="w-4 h-4 accent-brand-600 rounded shrink-0 cursor-pointer">
+              ${hasChildren
+                ? `<span class="w-4 text-center text-slate-400 shrink-0"><i class="fa-solid ${isExpanded ? 'fa-chevron-down text-brand-600' : 'fa-chevron-right'}" aria-hidden="true"></i></span>`
+                : (depth > 0 ? `<span class="text-slate-300 shrink-0">└</span>` : `<span class="w-4 text-center shrink-0"><i class="fa-regular fa-folder text-brand-500" aria-hidden="true"></i></span>`)
+              }
+              <span class="truncate select-none">${escapeHtml(list.name)}</span>
+              ${hasChildren ? `<span class="text-[11px] px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 shrink-0">${subLists.length} 子清單</span>` : ''}
             </div>
-            <span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full shrink-0">${directCount} 字</span>
-          </label>`;
+            <span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full shrink-0 ml-2">${directCount} 字</span>
+          </div>`;
       }).join('');
       updateSelectedQuizWordsCount();
+    }
+
+    function toggleQuizListExpand(listId) {
+      if (quizConfig.expandedListIds.has(listId)) quizConfig.expandedListIds.delete(listId);
+      else quizConfig.expandedListIds.add(listId);
+      initQuizSetupUI();
     }
 
     function onQuizTreeCheckboxChange(checkbox) {
@@ -2135,6 +2159,22 @@
       return { masked, matched };
     }
 
+function maskChineseMeaningInSentence(sentenceZh, meaningStr) {
+      if (!sentenceZh) return '';
+      if (!meaningStr) return sentenceZh;
+      let masked = sentenceZh;
+      const tokens = meaningStr
+        .split(/[,，、；;（）()\s/]+/)
+        .map(s => s.trim())
+        .filter(s => s.length >= 2)
+        .sort((a, b) => b.length - a.length);
+
+      tokens.forEach(token => {
+        masked = masked.replace(new RegExp(escapeRegExp(token), 'g'), ' ______ ');
+      });
+      return masked;
+    }
+
     function fetchOrReuseClozeSentence(qItem) {
       if (!qItem.options || qItem.options.length === 0) {
         qItem.options = shuffleArray([qItem.wordObj.word, ...buildEnglishDistractors(qItem.wordObj, 3)]);
@@ -2144,6 +2184,7 @@
         return Promise.resolve({
           sentenceEn: qItem.generatedSentence,
           sentenceZh: qItem.sentenceZh,
+          sentenceZhHint: qItem.sentenceZhHint || maskChineseMeaningInSentence(qItem.sentenceZh, qItem.wordObj.meaning),
           explanation: qItem.explanation,
           isAiGenerated: qItem.isAiSentence
         });
@@ -2156,14 +2197,23 @@
       const promise = (async () => {
         if (getApiKey() && navigator.onLine) {
           try {
-            const prompt = `針對英文單字 "${targetWord.word}"（詞性：${targetWord.pos}，中文：${targetWord.meaning}），造一個自然的英文例句（必須直接包含原形拼字 "${targetWord.word}"）。這題的另外三個干擾選項是：${distractors.join('、')}。請在 explanation 中簡明解釋為何本句語意適合 "${targetWord.word}"，並逐一點出其他三個干擾選項的中文意思與不符句意的原因（總長約 70～120 字，繁體中文）。回傳 JSON：{"sentenceEn":"包含該單字原形的英文句子","sentenceZh":"句子的繁體中文翻譯","explanation":"正解理由與其他三個選項的排除解析"}`;
+            const prompt = `針對英文單字 "${targetWord.word}"（詞性：${targetWord.pos}，中文：${targetWord.meaning}），造一個自然的英文例句（必須直接包含原形拼字 "${targetWord.word}"）。這題的另外三個干擾選項是：${distractors.join('、')}。請同時提供「完整中文翻譯 sentenceZh」以及「提示用挖空翻譯 sentenceZhHint」（將 sentenceZh 中對應 "${targetWord.word}" 意思的中文詞彙替換成 ____，避免直接洩漏答案）。並在 explanation 中簡明解釋為何本句語意適合 "${targetWord.word}"，並逐一點出其他三個干擾選項的中文意思與不符句意的原因（總長約 70～120 字，繁體中文）。回傳 JSON：{"sentenceEn":"包含該單字原形的英文句子","sentenceZh":"句子的完整繁體中文翻譯","sentenceZhHint":"將目標單字對應中文替換成 ____ 的提示翻譯","explanation":"正解理由與其他三個選項的排除解析"}`;
             const aiRes = await callGeminiJSON(prompt, 12000);
             if (aiRes.sentenceEn && buildClozeMaskedSentence(aiRes.sentenceEn, targetWord.word).matched) {
               qItem.generatedSentence = aiRes.sentenceEn;
               qItem.sentenceZh = aiRes.sentenceZh || '';
+              qItem.sentenceZhHint = (aiRes.sentenceZhHint && aiRes.sentenceZhHint.includes('_'))
+                ? aiRes.sentenceZhHint
+                : maskChineseMeaningInSentence(qItem.sentenceZh, targetWord.meaning);
               qItem.explanation = aiRes.explanation || '';
               qItem.isAiSentence = true;
-              return { sentenceEn: qItem.generatedSentence, sentenceZh: qItem.sentenceZh, explanation: qItem.explanation, isAiGenerated: true };
+              return {
+                sentenceEn: qItem.generatedSentence,
+                sentenceZh: qItem.sentenceZh,
+                sentenceZhHint: qItem.sentenceZhHint,
+                explanation: qItem.explanation,
+                isAiGenerated: true
+              };
             }
           } catch (_) {}
         }
@@ -2171,9 +2221,11 @@
         if (targetWord.exampleEn && buildClozeMaskedSentence(targetWord.exampleEn, targetWord.word).matched) {
           qItem.generatedSentence = targetWord.exampleEn;
           qItem.sentenceZh = targetWord.exampleZh || '';
+          qItem.sentenceZhHint = maskChineseMeaningInSentence(qItem.sentenceZh, targetWord.meaning);
         } else {
           qItem.generatedSentence = `Choose the English word that means "${targetWord.meaning}" (${targetWord.pos || 'word'}): ${targetWord.word}.`;
           qItem.sentenceZh = `請選出符合中文意思「${targetWord.meaning}」的英文單字。`;
+          qItem.sentenceZhHint = `請選出符合此語境（${targetWord.pos || '單字'}）的英文單字。`;
         }
 
         const distractorHints = distractors.map(d => {
@@ -2182,13 +2234,18 @@
         });
         qItem.explanation = `本句需要表達「${targetWord.meaning}」，故選 ${targetWord.word}；其餘干擾項為：${distractorHints.join('、')}，語意皆不符合本句上下文。`;
         qItem.isAiSentence = false;
-        return { sentenceEn: qItem.generatedSentence, sentenceZh: qItem.sentenceZh, explanation: qItem.explanation, isAiGenerated: false };
+        return {
+          sentenceEn: qItem.generatedSentence,
+          sentenceZh: qItem.sentenceZh,
+          sentenceZhHint: qItem.sentenceZhHint,
+          explanation: qItem.explanation,
+          isAiGenerated: false
+        };
       })();
 
       qItem.prefetchPromise = promise;
       return promise;
     }
-
     async function renderCurrentQuizQuestion() {
       const idx = activeQuiz.currentIndex;
       const total = activeQuiz.questions.length;
@@ -2247,17 +2304,29 @@
         const loadingOverlay = document.getElementById('quiz-question-loading');
         if (!qItem.generatedSentence && getApiKey() && navigator.onLine) loadingOverlay.classList.remove('hidden');
 
-        const { sentenceEn, sentenceZh, isAiGenerated } = await fetchOrReuseClozeSentence(qItem);
+        const { sentenceEn, sentenceZhHint, isAiGenerated } = await fetchOrReuseClozeSentence(qItem);
         const options = qItem.options;
         loadingOverlay.classList.add('hidden');
         if (idx + 1 < total) fetchOrReuseClozeSentence(activeQuiz.questions[idx + 1]);
 
         const { masked: clozeSentence } = buildClozeMaskedSentence(sentenceEn, targetWord.word);
-        promptContainer.innerHTML = `<div class="flex items-center gap-2 text-xs text-slate-400"><span>${isAiGenerated ? '<i class="fa-solid fa-wand-magic-sparkles text-brand-500" aria-hidden="true"></i> AI 即時語境例句' : '<i class="fa-solid fa-book text-slate-400" aria-hidden="true"></i> 題庫例句'}</span></div><p class="text-base sm:text-lg font-medium text-slate-900 leading-relaxed pt-1">${clozeSentence}</p>${sentenceZh ? `<p class="text-xs text-slate-500 pt-1">提示翻譯：${escapeHtml(sentenceZh)}</p>` : ''}`;
+        const hintBlockHtml = sentenceZhHint
+          ? `<div class="pt-1">
+               <button type="button" onclick="revealClozeHint()" id="btn-cloze-hint" class="text-xs text-brand-600 hover:underline font-medium flex items-center gap-1">
+                 <i class="fa-regular fa-lightbulb" aria-hidden="true"></i> 顯示提示翻譯（已遮蔽答案）
+               </button>
+               <p id="cloze-hint-text" class="hidden text-xs text-slate-500 mt-1 leading-relaxed">提示翻譯：${escapeHtml(sentenceZhHint)}</p>
+             </div>`
+          : '';
+        promptContainer.innerHTML = `<div class="flex items-center gap-2 text-xs text-slate-400"><span>${isAiGenerated ? '<i class="fa-solid fa-wand-magic-sparkles text-brand-500" aria-hidden="true"></i> AI 即時語境例句' : '<i class="fa-solid fa-book text-slate-400" aria-hidden="true"></i> 題庫例句'}</span></div><p class="text-base sm:text-lg font-medium text-slate-900 leading-relaxed pt-1">${clozeSentence}</p>${hintBlockHtml}`;
         answerArea.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">${options.map((opt, i) => `<button type="button" onclick="submitChoiceAnswer(this)" data-value="${escapeHtml(opt)}" class="quiz-opt-btn text-left p-3.5 rounded-xl border-2 border-slate-200 hover:border-brand-400 hover:bg-brand-50/30 font-semibold text-sm text-slate-800 transition-all flex items-center gap-3"><span class="w-6 h-6 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold flex items-center justify-center shrink-0">${['A', 'B', 'C', 'D'][i]}</span><span>${escapeHtml(opt)}</span></button>`).join('')}</div>`;
       }
     }
 
+    function revealClozeHint() {
+      document.getElementById('btn-cloze-hint').classList.add('hidden');
+      document.getElementById('cloze-hint-text').classList.remove('hidden');
+    }
     function revealSpellingHint() {
       document.getElementById('btn-spelling-hint').classList.add('hidden');
       document.getElementById('spelling-hint-text').classList.remove('hidden');
